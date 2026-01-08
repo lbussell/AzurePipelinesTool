@@ -3,8 +3,17 @@
   <!-- NuGet Package authoring best practices:
     https://learn.microsoft.com/en-us/nuget/create-packages/package-authoring-best-practices -->
 
+  <!-- .NET Tool creation guide:
+    https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools-how-to-create -->
+
   <!-- TargetFramework and other common properties are inherited from
     ../Directory.Build.props and shared by all projects. -->
+
+  <PropertyGroup Label="Tool Configuration">
+    <OutputType>Exe</OutputType>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>pipelinemon</ToolCommandName>
+  </PropertyGroup>
 
   <PropertyGroup Label="Package Metadata">
     <PackageId>PipelineMonitor</PackageId>
