@@ -9,7 +9,12 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <MicrosoftExtensionsVersion>10.0.1</MicrosoftExtensionsVersion>
+  </PropertyGroup>
+
   <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="MSTest" Version="4.0.1" />
   </ItemGroup>
 
