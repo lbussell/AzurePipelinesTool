@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PipelineMonitor.Authentication;
 
-namespace PipelineMonitor;
+namespace PipelineMonitor.AzureDevOps;
 
 internal sealed class PipelinesService(IVssConnectionProvider vssConnectionProvider)
 {

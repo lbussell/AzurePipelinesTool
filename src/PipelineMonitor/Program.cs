@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using System.CommandLine;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -34,6 +32,8 @@ var runPipelineExample = async () =>
         new PipelineId(1434));
     Console.WriteLine(pipeline);
 };
+
+await runOrgExample();
 
 // Now stuff is done.
 // Signal to stop the application.

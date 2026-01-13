@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Services.Location.Client;
 using Microsoft.VisualStudio.Services.WebApi;
 using PipelineMonitor.Authentication;
 
-namespace PipelineMonitor;
+namespace PipelineMonitor.AzureDevOps;
 
 /// <summary>
 /// Discovers Azure DevOps organizations that the authenticated user has access to.
