@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -28,7 +29,7 @@ internal interface IGitRemoteUrlProvider
 }
 
 /// <inheritdoc/>
-internal sealed class GitRemoteUrlProvider(ILogger<GitRemoteUrlProvider> logger) : IGitRemoteUrlProvider
+internal sealed partial class GitRemoteUrlProvider(ILogger<GitRemoteUrlProvider> logger) : IGitRemoteUrlProvider
 {
     private const string GitExecutable = "git";
     private const string OriginPushKey = "origin(push)";
@@ -77,18 +78,17 @@ internal sealed class GitRemoteUrlProvider(ILogger<GitRemoteUrlProvider> logger)
             }
 
             _cachedRemotes = [];
-            var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var line in lines)
+            // Parse each line using regex: {name}\s+{url}\s+({fetch|push})
+            foreach (var match in GitRemoteLineRegex().Matches(output).Cast<Match>())
             {
-                // Each line is: {name}\t{url} ({fetch|push})
-                var parts = line.Trim().Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length == 3)
-                {
-                    // Key format: "{name}({fetch|push})" matching Python implementation
-                    var key = parts[0] + parts[2];
-                    _cachedRemotes[key] = parts[1];
-                }
+                var name = match.Groups["name"].Value;
+                var url = match.Groups["url"].Value;
+                var type = match.Groups["type"].Value;
+                
+                // Key format: "{name}({fetch|push})" matching Python implementation
+                var key = name + type;
+                _cachedRemotes[key] = url;
             }
 
             return _cachedRemotes;
@@ -133,6 +133,10 @@ internal sealed class GitRemoteUrlProvider(ILogger<GitRemoteUrlProvider> logger)
 
         return null;
     }
+
+    // Regex to parse git remote -v output: {name}\s+{url}\s+({fetch|push})
+    [GeneratedRegex(@"^(?<name>\S+)\s+(?<url>\S+)\s+(?<type>\([^)]+\))", RegexOptions.Multiline)]
+    private static partial Regex GitRemoteLineRegex();
 }
 
 internal static class GitRemoteUrlProviderExtensions

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -31,7 +32,7 @@ internal interface IRepoInfoResolver
 }
 
 /// <inheritdoc/>
-internal sealed class RepoInfoResolver(
+internal sealed partial class RepoInfoResolver(
     IGitRemoteUrlProvider gitRemoteUrlProvider,
     IVstsGitUrlParser vstsGitUrlParser,
     ILogger<RepoInfoResolver> logger) : IRepoInfoResolver
@@ -114,16 +115,20 @@ internal sealed class RepoInfoResolver(
             // Extract org name from URL
             if (uri.Host.EndsWith(".visualstudio.com", StringComparison.OrdinalIgnoreCase))
             {
-                var orgName = uri.Host.Split('.')[0];
-                return new OrganizationInfo(orgName, uri);
+                var match = VisualStudioComOrgRegex().Match(uri.Host);
+                if (match.Success)
+                {
+                    var orgName = match.Groups["org"].Value;
+                    return new OrganizationInfo(orgName, uri);
+                }
             }
 
             if (uri.Host.Equals("dev.azure.com", StringComparison.OrdinalIgnoreCase))
             {
-                var pathParts = uri.AbsolutePath.Trim('/').Split('/');
-                if (pathParts.Length > 0 && !string.IsNullOrEmpty(pathParts[0]))
+                var match = DevAzureComPathRegex().Match(uri.AbsolutePath);
+                if (match.Success)
                 {
-                    var orgName = pathParts[0];
+                    var orgName = match.Groups["org"].Value;
                     return new OrganizationInfo(orgName, new Uri($"https://dev.azure.com/{orgName}"));
                 }
             }
@@ -135,6 +140,14 @@ internal sealed class RepoInfoResolver(
         // Treat as organization name
         return new OrganizationInfo(organization, new Uri($"https://dev.azure.com/{organization}"));
     }
+
+    // Regex to extract org from visualstudio.com subdomain: {org}.visualstudio.com
+    [GeneratedRegex(@"^(?<org>[^\.]+)\.visualstudio\.com", RegexOptions.IgnoreCase)]
+    private static partial Regex VisualStudioComOrgRegex();
+
+    // Regex to match dev.azure.com path to extract org: /{org}/...
+    [GeneratedRegex(@"^/(?<org>[^/]+)", RegexOptions.IgnoreCase)]
+    private static partial Regex DevAzureComPathRegex();
 }
 
 internal static class RepoInfoResolverExtensions
