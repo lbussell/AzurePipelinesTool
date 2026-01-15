@@ -15,7 +15,7 @@ var host = builder.Build();
 var applicationLifetimeTokenSource = new CancellationTokenSource();
 var runTask = host.RunAsync(applicationLifetimeTokenSource.Token);
 
-var runOrgExample = async () =>
+var orgExample = async () =>
 {
     var orgService = host.Services.GetRequiredService<IOrganizationDiscoveryService>();
     var organizations = await orgService.GetAccessibleOrganizationsAsync();
@@ -23,7 +23,7 @@ var runOrgExample = async () =>
     foreach (var org in organizations) Console.WriteLine($"- {org}");
 };
 
-var runPipelineExample = async () =>
+var pipelineExample = async () =>
 {
     var pipelinesService = host.Services.GetRequiredService<PipelinesService>();
     var pipeline = await pipelinesService.GetPipelineAsync(
@@ -33,7 +33,16 @@ var runPipelineExample = async () =>
     Console.WriteLine(pipeline);
 };
 
-await runOrgExample();
+var allPipelinesExample = async () =>
+{
+    var pipelinesService = host.Services.GetRequiredService<PipelinesService>();
+    var allPipelines = pipelinesService.GetAllPipelinesAsync(
+        new OrganizationInfo("dnceng", new Uri("https://dev.azure.com/dnceng")),
+        new ProjectInfo("internal"));
+    await foreach (var pipeline in allPipelines) Console.WriteLine(pipeline);
+};
+
+await allPipelinesExample();
 
 // Now stuff is done.
 // Signal to stop the application.
