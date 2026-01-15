@@ -135,7 +135,7 @@ internal sealed partial class VstsGitUrlParser(
         // dev.azure.com format: https://dev.azure.com/{org}/{project}/_git/{repo}
         if (uri.Host.Equals("dev.azure.com", StringComparison.OrdinalIgnoreCase))
         {
-            var match = DevAzureComUrlRegex().Match(uri.AbsolutePath);
+            var match = DevAzureComUrlRegex.Match(uri.AbsolutePath);
             if (match.Success)
             {
                 var orgName = match.Groups["org"].Value;
@@ -150,7 +150,7 @@ internal sealed partial class VstsGitUrlParser(
         // Also handles: https://{org}.visualstudio.com/DefaultCollection/{project}/_git/{repo}
         if (uri.Host.EndsWith(".visualstudio.com", StringComparison.OrdinalIgnoreCase))
         {
-            var orgMatch = VisualStudioComOrgRegex().Match(uri.Host);
+            var orgMatch = VisualStudioComOrgRegex.Match(uri.Host);
             if (!orgMatch.Success)
             {
                 return null;
@@ -159,7 +159,7 @@ internal sealed partial class VstsGitUrlParser(
             var orgName = orgMatch.Groups["org"].Value;
             var orgUri = new Uri($"https://{uri.Host}");
 
-            var pathMatch = VisualStudioComPathRegex().Match(uri.AbsolutePath);
+            var pathMatch = VisualStudioComPathRegex.Match(uri.AbsolutePath);
             if (pathMatch.Success)
             {
                 var projectName = pathMatch.Groups["project"].Value;
@@ -211,7 +211,7 @@ internal sealed partial class VstsGitUrlParser(
         var path = uri.AbsolutePath;
 
         // Try new SSH URL format: /v3/org/project/repo
-        var v3Match = SshV3PathRegex().Match(path);
+        var v3Match = SshV3PathRegex.Match(path);
         if (v3Match.Success)
         {
             var org = v3Match.Groups["org"].Value;
@@ -239,7 +239,7 @@ internal sealed partial class VstsGitUrlParser(
         // Replace _ssh with _git if present
         if (httpsUrl.Contains("_ssh/", StringComparison.OrdinalIgnoreCase))
         {
-            httpsUrl = SshPathSegmentRegex().Replace(httpsUrl, "_git/", 1);
+            httpsUrl = SshPathSegmentRegex.Replace(httpsUrl, "_git/", 1);
         }
         
         return httpsUrl;
@@ -269,7 +269,7 @@ internal sealed partial class VstsGitUrlParser(
         }
 
         // Match: {user}@vs-ssh.visualstudio.com -> {user}.visualstudio.com
-        var match = SshNetlocRegex().Match($"{userInfo}@{host}");
+        var match = SshNetlocRegex.Match($"{userInfo}@{host}");
         if (match.Success)
         {
             var user = match.Groups["user"].Value;
@@ -293,7 +293,7 @@ internal sealed partial class VstsGitUrlParser(
              url.Contains("ssh.dev.azure.com", StringComparison.OrdinalIgnoreCase)))
         {
             // Convert user@host:path format to ssh://user@host/path
-            var match = SshShortUrlRegex().Match(url);
+            var match = SshShortUrlRegex.Match(url);
             if (match.Success)
             {
                 var userHost = match.Groups["userhost"].Value;
@@ -312,31 +312,31 @@ internal sealed partial class VstsGitUrlParser(
 
     // Regex to match SSH netloc: user@vs-ssh.domain
     [GeneratedRegex(@"(?<user>[^@]+)@[^\.]+(?<domain>\.[^:]+)", RegexOptions.IgnoreCase)]
-    private static partial Regex SshNetlocRegex();
+    private static partial Regex SshNetlocRegex { get; }
 
     // Regex to match dev.azure.com URL path: /{org}/{project}/_git/{repo}
     [GeneratedRegex(@"^/(?<org>[^/]+)/(?<project>[^/]+)/_git/(?<repo>[^/]+)", RegexOptions.IgnoreCase)]
-    private static partial Regex DevAzureComUrlRegex();
+    private static partial Regex DevAzureComUrlRegex { get; }
 
     // Regex to extract org from visualstudio.com subdomain: {org}.visualstudio.com
     [GeneratedRegex(@"^(?<org>[^\.]+)\.visualstudio\.com", RegexOptions.IgnoreCase)]
-    private static partial Regex VisualStudioComOrgRegex();
+    private static partial Regex VisualStudioComOrgRegex { get; }
 
     // Regex to match visualstudio.com URL path: /{project}/_git/{repo} or /DefaultCollection/{project}/_git/{repo}
     [GeneratedRegex(@"^/(?:DefaultCollection/)?(?<project>[^/]+)/_git/(?<repo>[^/]+)", RegexOptions.IgnoreCase)]
-    private static partial Regex VisualStudioComPathRegex();
+    private static partial Regex VisualStudioComPathRegex { get; }
 
     // Regex to match SSH v3 path format: /v3/{org}/{project}/{repo}
     [GeneratedRegex(@"^/v3/(?<org>[^/]+)/(?<project>[^/]+)/(?<repo>[^/]+)", RegexOptions.IgnoreCase)]
-    private static partial Regex SshV3PathRegex();
+    private static partial Regex SshV3PathRegex { get; }
 
     // Regex to match _ssh/ path segment (case-insensitive)
     [GeneratedRegex(@"_ssh/", RegexOptions.IgnoreCase)]
-    private static partial Regex SshPathSegmentRegex();
+    private static partial Regex SshPathSegmentRegex { get; }
 
     // Regex to match SSH short URL format: user@host:path (without leading slash in path)
     [GeneratedRegex(@"^(?<userhost>[^:]+):(?<path>[^/].*)$")]
-    private static partial Regex SshShortUrlRegex();
+    private static partial Regex SshShortUrlRegex { get; }
 }
 
 internal static class VstsGitUrlParserExtensions

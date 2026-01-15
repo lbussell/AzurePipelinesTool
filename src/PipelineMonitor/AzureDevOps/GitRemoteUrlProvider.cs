@@ -80,7 +80,7 @@ internal sealed partial class GitRemoteUrlProvider(ILogger<GitRemoteUrlProvider>
             _cachedRemotes = [];
 
             // Parse each line using regex: {name}\s+{url}\s+({fetch|push})
-            foreach (var match in GitRemoteLineRegex().Matches(output).Cast<Match>())
+            foreach (var match in GitRemoteLineRegex.Matches(output).Cast<Match>())
             {
                 var name = match.Groups["name"].Value;
                 var url = match.Groups["url"].Value;
@@ -136,7 +136,7 @@ internal sealed partial class GitRemoteUrlProvider(ILogger<GitRemoteUrlProvider>
 
     // Regex to parse git remote -v output: {name}\s+{url}\s+({fetch|push})
     [GeneratedRegex(@"^(?<name>\S+)\s+(?<url>\S+)\s+(?<type>\([^)]+\))", RegexOptions.Multiline)]
-    private static partial Regex GitRemoteLineRegex();
+    private static partial Regex GitRemoteLineRegex { get; }
 }
 
 internal static class GitRemoteUrlProviderExtensions

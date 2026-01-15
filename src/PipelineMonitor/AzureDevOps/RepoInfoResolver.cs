@@ -115,7 +115,7 @@ internal sealed partial class RepoInfoResolver(
             // Extract org name from URL
             if (uri.Host.EndsWith(".visualstudio.com", StringComparison.OrdinalIgnoreCase))
             {
-                var match = VisualStudioComOrgRegex().Match(uri.Host);
+                var match = VisualStudioComOrgRegex.Match(uri.Host);
                 if (match.Success)
                 {
                     var orgName = match.Groups["org"].Value;
@@ -125,7 +125,7 @@ internal sealed partial class RepoInfoResolver(
 
             if (uri.Host.Equals("dev.azure.com", StringComparison.OrdinalIgnoreCase))
             {
-                var match = DevAzureComPathRegex().Match(uri.AbsolutePath);
+                var match = DevAzureComPathRegex.Match(uri.AbsolutePath);
                 if (match.Success)
                 {
                     var orgName = match.Groups["org"].Value;
@@ -143,11 +143,11 @@ internal sealed partial class RepoInfoResolver(
 
     // Regex to extract org from visualstudio.com subdomain: {org}.visualstudio.com
     [GeneratedRegex(@"^(?<org>[^\.]+)\.visualstudio\.com", RegexOptions.IgnoreCase)]
-    private static partial Regex VisualStudioComOrgRegex();
+    private static partial Regex VisualStudioComOrgRegex { get; }
 
     // Regex to match dev.azure.com path to extract org: /{org}/...
     [GeneratedRegex(@"^/(?<org>[^/]+)", RegexOptions.IgnoreCase)]
-    private static partial Regex DevAzureComPathRegex();
+    private static partial Regex DevAzureComPathRegex { get; }
 }
 
 internal static class RepoInfoResolverExtensions
