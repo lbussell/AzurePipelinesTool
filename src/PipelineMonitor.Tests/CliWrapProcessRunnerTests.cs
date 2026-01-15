@@ -46,7 +46,10 @@ public sealed class CliWrapProcessRunnerTests
         var result = await runner.RunAsync("dotnet", "invalid-command-that-does-not-exist");
 
         // Assert - dotnet writes errors to stderr or stdout depending on the error
-        Assert.IsFalse(string.IsNullOrWhiteSpace(result.StandardError) && string.IsNullOrWhiteSpace(result.StandardOutput));
+        // At least one of them should contain error information
+        var hasStdErr = !string.IsNullOrWhiteSpace(result.StandardError);
+        var hasStdOut = !string.IsNullOrWhiteSpace(result.StandardOutput);
+        Assert.IsTrue(hasStdErr || hasStdOut, "Expected error output in either StandardError or StandardOutput");
     }
 
     [TestMethod]
