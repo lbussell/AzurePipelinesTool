@@ -78,6 +78,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="CliWrap" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" />
     <PackageReference Include="System.CommandLine" />

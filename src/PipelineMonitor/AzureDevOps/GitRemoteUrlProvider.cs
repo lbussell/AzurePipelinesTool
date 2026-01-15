@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -28,11 +27,14 @@ internal interface IGitRemoteUrlProvider
 }
 
 /// <inheritdoc/>
-internal sealed class GitRemoteUrlProvider(ILogger<GitRemoteUrlProvider> logger) : IGitRemoteUrlProvider
+internal sealed class GitRemoteUrlProvider(
+    IProcessRunner processRunner,
+    ILogger<GitRemoteUrlProvider> logger) : IGitRemoteUrlProvider
 {
     private const string GitExecutable = "git";
     private const string OriginPushKey = "origin(push)";
 
+    private readonly IProcessRunner _processRunner = processRunner;
     private readonly ILogger<GitRemoteUrlProvider> _logger = logger;
     private Dictionary<string, string>? _cachedRemotes;
 
@@ -50,34 +52,16 @@ internal sealed class GitRemoteUrlProvider(ILogger<GitRemoteUrlProvider> logger)
             // Example output:
             // origin  https://dev.azure.com/org/project/_git/repo (fetch)
             // origin  https://dev.azure.com/org/project/_git/repo (push)
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = GitExecutable,
-                Arguments = "remote -v",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
+            var result = _processRunner.ExecuteAsync(GitExecutable, "remote -v").GetAwaiter().GetResult();
 
-            using var process = Process.Start(startInfo);
-            if (process is null)
+            if (result.ExitCode != 0)
             {
-                _logger.LogDebug("Failed to start git process");
-                return null;
-            }
-
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-            {
-                _logger.LogDebug("git remote -v exited with code {ExitCode}", process.ExitCode);
+                _logger.LogDebug("git remote -v exited with code {ExitCode}", result.ExitCode);
                 return null;
             }
 
             _cachedRemotes = [];
-            var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            var lines = result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var line in lines)
             {
@@ -141,6 +125,7 @@ internal static class GitRemoteUrlProviderExtensions
     {
         public IServiceCollection TryAddGitRemoteUrlProvider()
         {
+            services.TryAddProcessRunner();
             services.TryAddSingleton<IGitRemoteUrlProvider, GitRemoteUrlProvider>();
             return services;
         }
