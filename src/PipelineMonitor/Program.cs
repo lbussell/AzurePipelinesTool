@@ -10,6 +10,7 @@ using PipelineMonitor.AzureDevOps;
 var builder = Host.CreateApplicationBuilder();
 builder.Services.TryAddPipelinesService();
 builder.Services.TryAddOrganizationDiscoveryService();
+builder.Services.TryAddRepoInfoResolver();
 var host = builder.Build();
 
 var applicationLifetimeTokenSource = new CancellationTokenSource();
@@ -42,7 +43,14 @@ var allPipelinesExample = async () =>
     await foreach (var pipeline in allPipelines) Console.WriteLine(pipeline);
 };
 
-await allPipelinesExample();
+var repoInfoExample = async () =>
+{
+    var resolver = host.Services.GetRequiredService<IRepoInfoResolver>();
+    var info = await resolver.ResolveAsync();
+    Console.WriteLine($"Detected Repository: {info}");
+};
+
+await repoInfoExample();
 
 // Now stuff is done.
 // Signal to stop the application.
