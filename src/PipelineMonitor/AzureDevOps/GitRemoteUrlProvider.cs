@@ -54,6 +54,12 @@ internal sealed class GitRemoteUrlProvider(
             // origin  https://dev.azure.com/org/project/_git/repo (push)
             var result = _processRunner.ExecuteAsync(GitExecutable, "remote -v", throwOnNonZeroExitCode: false).GetAwaiter().GetResult();
 
+            if (result.ExitCode != 0)
+            {
+                _logger.LogDebug("git remote -v exited with code {ExitCode}", result.ExitCode);
+                return null;
+            }
+
             _cachedRemotes = [];
             var lines = result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
