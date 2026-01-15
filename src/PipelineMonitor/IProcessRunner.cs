@@ -13,13 +13,13 @@ internal interface IProcessRunner
     /// </summary>
     /// <param name="executable">The executable to run.</param>
     /// <param name="arguments">The arguments to pass to the executable.</param>
-    /// <param name="throwOnNonZeroExitCode">Whether to throw an exception on non-zero exit codes. Defaults to true.</param>
+    /// <param name="allowNonZeroExitCode">Whether to allow non-zero exit codes without throwing. Defaults to false (throws on non-zero).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A result containing exit code and output.</returns>
     Task<ProcessResult> ExecuteAsync(
         string executable,
         string arguments,
-        bool throwOnNonZeroExitCode = true,
+        bool allowNonZeroExitCode = false,
         CancellationToken cancellationToken = default);
 }
 

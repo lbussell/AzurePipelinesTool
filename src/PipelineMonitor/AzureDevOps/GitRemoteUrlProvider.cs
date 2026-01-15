@@ -52,7 +52,7 @@ internal sealed class GitRemoteUrlProvider(
             // Example output:
             // origin  https://dev.azure.com/org/project/_git/repo (fetch)
             // origin  https://dev.azure.com/org/project/_git/repo (push)
-            var result = _processRunner.ExecuteAsync(GitExecutable, "remote -v", throwOnNonZeroExitCode: false).GetAwaiter().GetResult();
+            var result = _processRunner.ExecuteAsync(GitExecutable, "remote -v", allowNonZeroExitCode: true).GetAwaiter().GetResult();
 
             if (result.ExitCode != 0)
             {

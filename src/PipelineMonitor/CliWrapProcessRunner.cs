@@ -18,12 +18,12 @@ internal sealed class CliWrapProcessRunner : IProcessRunner
     public async Task<ProcessResult> ExecuteAsync(
         string executable,
         string arguments,
-        bool throwOnNonZeroExitCode = true,
+        bool allowNonZeroExitCode = false,
         CancellationToken cancellationToken = default)
     {
-        var validation = throwOnNonZeroExitCode 
-            ? CommandResultValidation.ZeroExitCode 
-            : CommandResultValidation.None;
+        var validation = allowNonZeroExitCode 
+            ? CommandResultValidation.None
+            : CommandResultValidation.ZeroExitCode;
 
         var result = await Cli.Wrap(executable)
             .WithArguments(arguments)
