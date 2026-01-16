@@ -20,13 +20,12 @@ internal interface IAzureCredentialProvider
 }
 
 /// <summary>
-/// Default implementation that uses <see cref="DefaultAzureCredential"/> to
-/// automatically select the best available authentication method (Azure CLI,
-/// environment variables, managed identity, etc.).
+/// Default implementation that uses <see cref="AzureDeveloperCliCredential"/> to
+/// authenticate using the Azure Developer CLI (azd).
 /// </summary>
 internal sealed class AzureCredentialProvider : IAzureCredentialProvider
 {
-    private readonly Lazy<TokenCredential> _credential = new(() => new DefaultAzureCredential());
+    private readonly Lazy<TokenCredential> _credential = new(() => new AzureDeveloperCliCredential());
 
     /// <inheritdoc/>
     public TokenCredential GetCredential() => _credential.Value;
