@@ -20,6 +20,7 @@
     <PackageVersion Include="Microsoft.TeamFoundationServer.Client" Version="19.225.2" />
     <PackageVersion Include="MSTest" Version="4.0.1" />
     <PackageVersion Include="NLog.Extensions.Hosting" Version="6.1.0" />
+    <PackageVersion Include="Spectre.Console" Version="0.54.1-alpha.0.31" />
     <PackageVersion Include="System.CommandLine" Version="2.0.1" />
     <!-- System.Data.SqlClient is a transitive dependency from Microsoft.TeamFoundationServer.Client.
          This direct reference overrides version 4.8.5 to fix CVE-2024-0056 (GHSA-98g6-xh36-x2p7),

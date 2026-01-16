@@ -82,6 +82,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" />
     <PackageReference Include="NLog.Extensions.Hosting" />
+    <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.CommandLine" />
     <!-- System.Data.SqlClient is a transitive dependency from Microsoft.TeamFoundationServer.Client.
          This direct reference overrides version 4.8.5 to fix CVE-2024-0056 (GHSA-98g6-xh36-x2p7),

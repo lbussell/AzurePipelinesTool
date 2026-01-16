@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -10,8 +11,10 @@ using NLog.Targets;
 
 namespace PipelineMonitor.Logging;
 
-internal sealed class LogLocationService : IHostedLifecycleService
+internal sealed class LogLocationService(IInteractionService interactionService) : IHostedLifecycleService
 {
+    private readonly IInteractionService _interactionService = interactionService;
+
     public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     public Task StartedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     public Task StartingAsync(CancellationToken cancellationToken) => Task.CompletedTask;
@@ -25,7 +28,7 @@ internal sealed class LogLocationService : IHostedLifecycleService
         {
             var logEventInfo = new LogEventInfo { TimeStamp = DateTime.Now };
             var fileName = fileTarget.FileName.Render(logEventInfo);
-            Console.WriteLine($"Log file: {fileName}");
+            _interactionService.DisplaySubtleMessage($"Log file written to '{fileName}'");
         }
 
         return Task.CompletedTask;
@@ -37,6 +40,7 @@ internal static class LogLocationServiceExtensions
     public static ILoggingBuilder AddLogLocationOnExit(this ILoggingBuilder loggingBuilder)
     {
         loggingBuilder.Services.AddHostedService<LogLocationService>();
+        loggingBuilder.Services.TryAddSingleton<IInteractionService, InteractionService>();
         return loggingBuilder;
     }
 }

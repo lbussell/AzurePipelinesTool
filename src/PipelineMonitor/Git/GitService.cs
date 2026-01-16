@@ -5,41 +5,24 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace PipelineMonitor.AzureDevOps;
+namespace PipelineMonitor.Git;
 
 /// <summary>
-/// Provides access to Git remote URLs from the current working directory.
+/// Provides access to Git data from the current working directory.
 /// </summary>
-internal interface IGitRemoteUrlProvider
-{
-    /// <summary>
-    /// Gets all Git remote URLs from the current directory.
-    /// Returns a dictionary where keys are "{remote_name}({fetch|push})" and values are URLs.
-    /// </summary>
-    IReadOnlyDictionary<string, string>? GetRemotes();
-
-    /// <summary>
-    /// Gets the best remote URL for Azure DevOps detection.
-    /// Prefers 'origin (push)', then other '(push)' remotes.
-    /// </summary>
-    /// <param name="validationFunction">Optional function to filter candidate URLs.</param>
-    string? GetRemoteUrl(Func<string, bool>? validationFunction = null);
-}
-
-/// <inheritdoc/>
-internal sealed class GitRemoteUrlProvider(
+internal sealed class GitService(
     IProcessRunner processRunner,
-    ILogger<GitRemoteUrlProvider> logger) : IGitRemoteUrlProvider
+    ILogger<GitService> logger) : IGitRemoteUrlProvider, IGitRepoRootProvider
 {
     private const string GitExecutable = "git";
     private const string OriginPushKey = "origin(push)";
 
     private readonly IProcessRunner _processRunner = processRunner;
-    private readonly ILogger<GitRemoteUrlProvider> _logger = logger;
+    private readonly ILogger<GitService> _logger = logger;
     private Dictionary<string, string>? _cachedRemotes;
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string>? GetRemotes()
+    public async Task<IReadOnlyDictionary<string, string>?> GetRemotesAsync(CancellationToken cancellationToken = default)
     {
         if (_cachedRemotes is not null)
         {
@@ -52,7 +35,7 @@ internal sealed class GitRemoteUrlProvider(
             // Example output:
             // origin  https://dev.azure.com/org/project/_git/repo (fetch)
             // origin  https://dev.azure.com/org/project/_git/repo (push)
-            var result = _processRunner.ExecuteAsync(GitExecutable, "remote -v").GetAwaiter().GetResult();
+            var result = await _processRunner.ExecuteAsync(GitExecutable, "remote -v", cancellationToken: cancellationToken);
 
             _cachedRemotes = [];
             var lines = result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
@@ -80,9 +63,11 @@ internal sealed class GitRemoteUrlProvider(
     }
 
     /// <inheritdoc/>
-    public string? GetRemoteUrl(Func<string, bool>? validationFunction = null)
+    public async Task<string?> GetRemoteUrlAsync(
+        Func<string, bool>? validationFunction = null,
+        CancellationToken cancellationToken = default)
     {
-        var remotes = GetRemotes();
+        var remotes = await GetRemotesAsync(cancellationToken);
         if (remotes is null)
         {
             return null;
@@ -111,16 +96,41 @@ internal sealed class GitRemoteUrlProvider(
 
         return null;
     }
+
+    /// <inheritdoc/>
+    public async Task<string?> GetRepoRootAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await _processRunner.ExecuteAsync(GitExecutable, "rev-parse --show-toplevel", cancellationToken: cancellationToken);
+            var root = result.StandardOutput.Trim();
+            if (string.IsNullOrEmpty(root))
+            {
+                _logger.LogInformation("Could not detect git repository root based on current working directory");
+                return null;
+            }
+
+            return root;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogInformation("Could not detect git repository root based on current working directory");
+            _logger.LogDebug(ex, "Exception details");
+            return null;
+        }
+    }
 }
 
-internal static class GitRemoteUrlProviderExtensions
+internal static class GitServiceExtensions
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection TryAddGitRemoteUrlProvider()
+        public IServiceCollection TryAddGitService()
         {
             services.TryAddProcessRunner();
-            services.TryAddSingleton<IGitRemoteUrlProvider, GitRemoteUrlProvider>();
+            services.TryAddSingleton<GitService>();
+            services.TryAddSingleton<IGitRemoteUrlProvider>(sp => sp.GetRequiredService<GitService>());
+            services.TryAddSingleton<IGitRepoRootProvider>(sp => sp.GetRequiredService<GitService>());
             return services;
         }
     }

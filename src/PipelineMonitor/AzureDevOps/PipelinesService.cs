@@ -1,21 +1,25 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using System.Runtime.CompilerServices;
 using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using PipelineMonitor.Authentication;
+using PipelineMonitor.Git;
 
 namespace PipelineMonitor.AzureDevOps;
 
 internal sealed class PipelinesService(
     IVssConnectionProvider vssConnectionProvider,
-    IRepoInfoResolver repoInfoResolver)
+    IRepoInfoResolver repoInfoResolver,
+    IGitRepoRootProvider gitRepoRootProvider)
 {
     private readonly IVssConnectionProvider _vssConnectionProvider = vssConnectionProvider;
     private readonly IRepoInfoResolver _repoInfoResolver = repoInfoResolver;
+    private readonly IGitRepoRootProvider _gitRepoRootProvider = gitRepoRootProvider;
 
     public async Task<PipelineInfo> GetPipelineAsync(OrganizationInfo org, ProjectInfo project, PipelineId id)
     {
@@ -26,9 +30,10 @@ internal sealed class PipelinesService(
         return result;
     }
 
-    public async IAsyncEnumerable<LocalPipelineInfo> GetLocalPipelinesAsync()
+    public async IAsyncEnumerable<LocalPipelineInfo> GetLocalPipelinesAsync(
+        [EnumeratorCancellation] CancellationToken ct = default)
     {
-        var repoInfo = await _repoInfoResolver.ResolveAsync();
+        var repoInfo = await _repoInfoResolver.ResolveAsync(cancellationToken: ct);
         if (repoInfo.Organization is null
             || repoInfo.Project is null
             || repoInfo.Repository is null)
@@ -42,28 +47,27 @@ internal sealed class PipelinesService(
         var buildDefinitions = await buildsClient.GetFullDefinitionsAsync2(
             repositoryId: repoInfo.Repository.Id.ToString(),
             project: repoInfo.Project.Name,
-            repositoryType: "TfsGit");
+            repositoryType: "TfsGit",
+            cancellationToken: ct);
+
+        var repoRoot = await _gitRepoRootProvider.GetRepoRootAsync(ct);
 
         foreach (var buildDefinition in buildDefinitions)
         {
             // Ignore non-YAML pipeline definitions for now.
             if (buildDefinition.Process is not YamlProcess yamlBuildProcess)
-            {
                 continue;
-            }
 
-            var relativePath = yamlBuildProcess.YamlFilename;
             // Path.Join vs. Path.Combine: YamlProcess.YamlFilename has a leading
             // slash, which causes Path.Combine to ignore the first argument.
-            // TODO: Extract Environment.CurrentDirectory into a service.
-            var pipelineFilePath = Path.Join(Environment.CurrentDirectory, relativePath);
+            var pipelineFilePath = Path.Join(repoRoot ?? Environment.CurrentDirectory, yamlBuildProcess.YamlFilename);
+            var relativePath = Path.GetRelativePath(Environment.CurrentDirectory, pipelineFilePath);
 
-            var pipeline = new LocalPipelineInfo(
+            yield return new LocalPipelineInfo(
                 Name: buildDefinition.Name,
                 DefinitionFile: new FileInfo(pipelineFilePath),
-                Id: new(buildDefinition.Id));
-
-            yield return pipeline;
+                Id: new(buildDefinition.Id),
+                RelativePath: relativePath);
         }
     }
 
