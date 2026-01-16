@@ -69,10 +69,9 @@ var localPipelinesExample = async () =>
     var interactionService = host.Services.GetRequiredService<IInteractionService>();
     var ansiConsole = host.Services.GetRequiredService<IAnsiConsole>();
 
-    var pipelinesTask = pipelinesService.GetLocalPipelinesAsync();
     var pipelines = await interactionService.ShowStatusAsync(
         "Loading pipelines...",
-        () => pipelinesTask);
+        async () => await pipelinesService.GetLocalPipelinesAsync().ToListAsync());
 
     var table = new Table()
         .Border(TableBorder.Simple)

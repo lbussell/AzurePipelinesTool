@@ -75,7 +75,7 @@ internal sealed class RepoInfoResolver(
         {
             var startTime = DateTime.Now;
 
-            var remoteUrl = _gitRemoteUrlProvider.GetRemoteUrl(_vstsGitUrlParser.IsAzureDevOpsUrl);
+            var remoteUrl = await _gitRemoteUrlProvider.GetRemoteUrlAsync(_vstsGitUrlParser.IsAzureDevOpsUrl, cancellationToken);
             if (!string.IsNullOrEmpty(remoteUrl))
             {
                 var detected = await _vstsGitUrlParser.ParseAsync(remoteUrl, cancellationToken);
@@ -143,7 +143,7 @@ internal static class RepoInfoResolverExtensions
     {
         public IServiceCollection TryAddRepoInfoResolver()
         {
-            services.TryAddGitRemoteUrlProvider();
+            services.TryAddGitService();
             services.TryAddVstsGitUrlParser();
             services.TryAddSingleton<IRepoInfoResolver, RepoInfoResolver>();
             return services;

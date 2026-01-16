@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using System.Runtime.CompilerServices;
 using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -12,10 +13,12 @@ namespace PipelineMonitor.AzureDevOps;
 
 internal sealed class PipelinesService(
     IVssConnectionProvider vssConnectionProvider,
-    IRepoInfoResolver repoInfoResolver)
+    IRepoInfoResolver repoInfoResolver,
+    IGitRepoRootProvider gitRepoRootProvider)
 {
     private readonly IVssConnectionProvider _vssConnectionProvider = vssConnectionProvider;
     private readonly IRepoInfoResolver _repoInfoResolver = repoInfoResolver;
+    private readonly IGitRepoRootProvider _gitRepoRootProvider = gitRepoRootProvider;
 
     public async Task<PipelineInfo> GetPipelineAsync(OrganizationInfo org, ProjectInfo project, PipelineId id)
     {
@@ -26,14 +29,15 @@ internal sealed class PipelinesService(
         return result;
     }
 
-    public async Task<IEnumerable<LocalPipelineInfo>> GetLocalPipelinesAsync()
+    public async IAsyncEnumerable<LocalPipelineInfo> GetLocalPipelinesAsync(
+        [EnumeratorCancellation] CancellationToken ct = default)
     {
-        var repoInfo = await _repoInfoResolver.ResolveAsync();
+        var repoInfo = await _repoInfoResolver.ResolveAsync(cancellationToken: ct);
         if (repoInfo.Organization is null
             || repoInfo.Project is null
             || repoInfo.Repository is null)
         {
-            return [];
+            yield break;
         }
 
         var connection = _vssConnectionProvider.GetConnection(repoInfo.Organization.Uri);
@@ -42,29 +46,28 @@ internal sealed class PipelinesService(
         var buildDefinitions = await buildsClient.GetFullDefinitionsAsync2(
             repositoryId: repoInfo.Repository.Id.ToString(),
             project: repoInfo.Project.Name,
-            repositoryType: "TfsGit");
+            repositoryType: "TfsGit",
+            cancellationToken: ct);
 
-        return buildDefinitions
-            .Select(buildDefinition =>
-            {
-                // Ignore non-YAML pipeline definitions for now.
-                if (buildDefinition.Process is not YamlProcess yamlBuildProcess)
-                    return null;
+        var repoRoot = await _gitRepoRootProvider.GetRepoRootAsync(ct);
 
-                var relativePath = yamlBuildProcess.YamlFilename;
-                // Path.Join vs. Path.Combine: YamlProcess.YamlFilename has a leading
-                // slash, which causes Path.Combine to ignore the first argument.
-                // TODO: Extract Environment.CurrentDirectory into a service.
-                var pipelineFilePath = Path.Join(Environment.CurrentDirectory, relativePath);
+        foreach (var buildDefinition in buildDefinitions)
+        {
+            // Ignore non-YAML pipeline definitions for now.
+            if (buildDefinition.Process is not YamlProcess yamlBuildProcess)
+                continue;
 
-                return new LocalPipelineInfo(
-                    Name: buildDefinition.Name,
-                    DefinitionFile: new FileInfo(pipelineFilePath),
-                    Id: new(buildDefinition.Id),
-                    RelativePath: relativePath.TrimStart('/'));
-            })
-            // Filter out nulls (non-YAML pipelines).
-            .OfType<LocalPipelineInfo>();
+            // Path.Join vs. Path.Combine: YamlProcess.YamlFilename has a leading
+            // slash, which causes Path.Combine to ignore the first argument.
+            var pipelineFilePath = Path.Join(repoRoot ?? Environment.CurrentDirectory, yamlBuildProcess.YamlFilename);
+            var relativePath = Path.GetRelativePath(Environment.CurrentDirectory, pipelineFilePath);
+
+            yield return new LocalPipelineInfo(
+                Name: buildDefinition.Name,
+                DefinitionFile: new FileInfo(pipelineFilePath),
+                Id: new(buildDefinition.Id),
+                RelativePath: relativePath);
+        }
     }
 
     public async IAsyncEnumerable<PipelineInfo> GetAllPipelinesAsync(OrganizationInfo org, ProjectInfo project)
