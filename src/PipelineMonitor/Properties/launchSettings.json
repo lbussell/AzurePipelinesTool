@@ -2,7 +2,7 @@
   "profiles": {
     "Development": {
       "commandName": "Project",
-      "commandLineArgs": "",
+      "commandLineArgs": "discover",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },

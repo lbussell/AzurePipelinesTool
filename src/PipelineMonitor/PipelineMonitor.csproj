@@ -79,6 +79,7 @@
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="CliWrap" />
+    <PackageReference Include="ConsoleAppFramework" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" />
     <PackageReference Include="NLog.Extensions.Hosting" />
