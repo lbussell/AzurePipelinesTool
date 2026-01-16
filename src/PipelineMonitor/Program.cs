@@ -18,8 +18,6 @@ builder.Configuration.SetBasePath(AppContext.BaseDirectory);
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
 
 builder.Services.TryAddPipelinesService();
-builder.Services.TryAddOrganizationDiscoveryService();
-builder.Services.TryAddRepoInfoResolver();
 builder.Services.TryAddInteractionService();
 
 builder.Logging.ClearProviders();
@@ -47,7 +45,7 @@ internal sealed class App(
             .ToListAsync()
             .AsTask();
 
-        List<LocalPipelineInfo> pipelines = await _interactionService
+        IReadOnlyList<LocalPipelineInfo> pipelines = await _interactionService
             .ShowStatusAsync("Loading pipelines...", () => pipelinesTask);
 
         var table = new Table()
@@ -61,5 +59,37 @@ internal sealed class App(
                 $"[bold green]{pipeline.Name}[/]");
 
         _ansiConsole.Write(table);
+    }
+
+    [Command("info")]
+    public async Task ShowPipelineInfoAsync(
+        [FromServices] PipelinesService pipelinesService,
+        [Argument] string definitionPath)
+    {
+        var pipelineFile = new FileInfo(definitionPath);
+        if (!pipelineFile.Exists)
+        {
+            _ansiConsole.MarkupLine($"[red]Error:[/] Definition file '{definitionPath}' does not exist.");
+            return;
+        }
+
+        var pipelinesTask = pipelinesService
+            .GetLocalPipelinesAsync()
+            .ToListAsync()
+            .AsTask();
+
+        List<LocalPipelineInfo> pipelines = await _interactionService
+            .ShowStatusAsync("Loading...", () => pipelinesTask);
+
+        var thisPipeline = pipelines.FirstOrDefault(pipeline =>
+            pipeline.DefinitionFile.FullName.Equals(pipelineFile.FullName));
+
+        if (thisPipeline is null)
+        {
+            _ansiConsole.MarkupLine($"[red]Error:[/] No pipeline found for definition file '{definitionPath}'.");
+            return;
+        }
+
+        _ansiConsole.MarkupLine($"[blue]{thisPipeline.RelativePath}[/] refers to pipeline [bold green]{thisPipeline.Name}[/] [dim](ID: {thisPipeline.Id.Value})[/]");
     }
 }
