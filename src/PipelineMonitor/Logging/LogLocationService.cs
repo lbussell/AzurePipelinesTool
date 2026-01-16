@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using NLog;
 using NLog.Targets;
@@ -33,9 +34,9 @@ internal sealed class LogLocationService : IHostedLifecycleService
 
 public static class LogLocationServiceExtensions
 {
-    public static IServiceCollection ShowLogLocationOnExit(this IServiceCollection services)
+    public static ILoggingBuilder AddLogLocationOnExit(this ILoggingBuilder loggingBuilder)
     {
-        services.AddHostedService<LogLocationService>();
-        return services;
+        loggingBuilder.Services.AddHostedService<LogLocationService>();
+        return loggingBuilder;
     }
 }

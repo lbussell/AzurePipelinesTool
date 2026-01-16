@@ -13,15 +13,14 @@ using PipelineMonitor.Logging;
 var builder = Host.CreateApplicationBuilder();
 builder.Configuration.SetBasePath(AppContext.BaseDirectory);
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
-Console.WriteLine(builder.Configuration.GetDebugView());
 
 builder.Services.TryAddPipelinesService();
 builder.Services.TryAddOrganizationDiscoveryService();
 builder.Services.TryAddRepoInfoResolver();
-builder.Services.ShowLogLocationOnExit();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddFileLogger(builder.Configuration);
+builder.Logging.AddLogLocationOnExit();
 
 var host = builder.Build();
 
