@@ -60,7 +60,8 @@ internal sealed class PipelinesService(
                 return new LocalPipelineInfo(
                     Name: buildDefinition.Name,
                     DefinitionFile: new FileInfo(pipelineFilePath),
-                    Id: new(buildDefinition.Id));
+                    Id: new(buildDefinition.Id),
+                    RelativePath: relativePath.TrimStart('/'));
             })
             // Filter out nulls (non-YAML pipelines).
             .OfType<LocalPipelineInfo>();

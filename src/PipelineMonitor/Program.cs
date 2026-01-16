@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using PipelineMonitor;
 using PipelineMonitor.AzureDevOps;
 using PipelineMonitor.Logging;
+using Spectre.Console;
 
 var builder = Host.CreateApplicationBuilder();
 builder.Configuration.SetBasePath(AppContext.BaseDirectory);
@@ -66,13 +67,24 @@ var localPipelinesExample = async () =>
 {
     var pipelinesService = host.Services.GetRequiredService<PipelinesService>();
     var interactionService = host.Services.GetRequiredService<IInteractionService>();
+    var ansiConsole = host.Services.GetRequiredService<IAnsiConsole>();
 
     var pipelinesTask = pipelinesService.GetLocalPipelinesAsync();
     var pipelines = await interactionService.ShowStatusAsync(
         "Loading pipelines...",
         () => pipelinesTask);
 
-    foreach (var pipeline in pipelines) Console.WriteLine(pipeline);
+    var table = new Table()
+        .Border(TableBorder.Simple)
+        .AddColumn("Definition")
+        .AddColumn("Pipeline");
+
+    foreach (var pipeline in pipelines)
+    {
+        table.AddRow($"[blue]{pipeline.RelativePath}[/]", $"[bold green]{pipeline.Name}[/]");
+    }
+
+    ansiConsole.Write(new Padder(table));
 };
 
 await localPipelinesExample();
