@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using System.Collections.Concurrent;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -29,9 +30,19 @@ internal sealed class VssConnectionProvider(IAzureCredentialProvider azureCreden
     : IVssConnectionProvider
 {
     private readonly IAzureCredentialProvider _azureCredentialProvider = azureCredentialProvider;
+    private readonly ConcurrentDictionary<string, Lazy<VssConnection>> _connectionCache = new();
 
     /// <inheritdoc/>
-    public VssConnection GetConnection(Uri orgnanization)
+    public VssConnection GetConnection(Uri organization)
+    {
+        var cacheKey = organization.AbsoluteUri;
+        var lazyConnection = _connectionCache.GetOrAdd(
+            cacheKey,
+            _ => new Lazy<VssConnection>(() => CreateConnection(organization)));
+        return lazyConnection.Value;
+    }
+
+    private VssConnection CreateConnection(Uri organization)
     {
         // This scope provides access to Azure DevOps Services REST API.
         // See https://learn.microsoft.com/rest/api/azure/devops/tokens/?view=azure-devops-rest-7.1&tabs=powershell#personal-access-tokens-pats
@@ -43,7 +54,7 @@ internal sealed class VssConnectionProvider(IAzureCredentialProvider azureCreden
         var tokenString = tokenObject.Token;
 
         var vssCredential = new VssOAuthAccessTokenCredential(tokenString);
-        var vssConnection = new VssConnection(baseUrl: orgnanization, credentials: vssCredential);
+        var vssConnection = new VssConnection(baseUrl: organization, credentials: vssCredential);
         return vssConnection;
     }
 }
