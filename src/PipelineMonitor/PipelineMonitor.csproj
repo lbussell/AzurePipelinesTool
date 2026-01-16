@@ -76,6 +76,10 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
+  <ItemGroup Label="Test Access">
+    <InternalsVisibleTo Include="PipelineMonitor.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="CliWrap" />
@@ -85,6 +89,7 @@
     <PackageReference Include="NLog.Extensions.Hosting" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="YamlDotNet" />
     <!-- System.Data.SqlClient is a transitive dependency from Microsoft.TeamFoundationServer.Client.
          This direct reference overrides version 4.8.5 to fix CVE-2024-0056 (GHSA-98g6-xh36-x2p7),
          a high-severity vulnerability allowing encryption bypass on SQL Server connections. -->

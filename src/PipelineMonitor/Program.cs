@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 using PipelineMonitor;
 using PipelineMonitor.AzureDevOps;
+using PipelineMonitor.AzureDevOps.Yaml;
 using PipelineMonitor.Logging;
 
 using Spectre.Console;
@@ -19,6 +20,7 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 
 builder.Services.TryAddPipelinesService();
 builder.Services.TryAddInteractionService();
+builder.Services.TryAddPipelineYamlService();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddFileLogger(builder.Configuration);
@@ -91,5 +93,56 @@ internal sealed class App(
         }
 
         _ansiConsole.MarkupLine($"[blue]{thisPipeline.RelativePath}[/] refers to pipeline [bold green]{thisPipeline.Name}[/] [dim](ID: {thisPipeline.Id.Value})[/]");
+    }
+
+    [Command("parameters")]
+    public async Task ShowParametersAsync(
+        [FromServices] IPipelineYamlService pipelineYamlService,
+        [Argument] string definitionPath)
+    {
+        var pipelineFile = new FileInfo(definitionPath);
+        if (!pipelineFile.Exists)
+        {
+            _ansiConsole.MarkupLine($"[red]Error:[/] Definition file '{definitionPath}' does not exist.");
+            return;
+        }
+
+        var parseTask = pipelineYamlService.ParseAsync(pipelineFile.FullName);
+        var pipeline = await _interactionService.ShowStatusAsync("Parsing YAML...", () => parseTask);
+
+        if (pipeline is null)
+        {
+            _ansiConsole.MarkupLine("[red]Error:[/] Failed to parse pipeline YAML file.");
+            return;
+        }
+
+        if (pipeline.Parameters is null || pipeline.Parameters.Count == 0)
+        {
+            _ansiConsole.MarkupLine("[yellow]No parameters defined in this pipeline.[/]");
+            return;
+        }
+
+        var table = new Table()
+            .Border(TableBorder.Simple)
+            .AddColumn("Name")
+            .AddColumn("Type")
+            .AddColumn("Default")
+            .AddColumn("Values");
+
+        foreach (var param in pipeline.Parameters)
+        {
+            var defaultValue = param.Default?.ToString() ?? "[dim]<none>[/]";
+            var values = param.Values is not null
+                ? string.Join(", ", param.Values)
+                : "[dim]<any>[/]";
+
+            table.AddRow(
+                $"[bold]{param.Name}[/]",
+                $"[blue]{param.Type}[/]",
+                defaultValue,
+                values);
+        }
+
+        _ansiConsole.Write(table);
     }
 }
