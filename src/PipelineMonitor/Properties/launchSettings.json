@@ -1,9 +1,11 @@
 {
   "profiles": {
-    "MyLaunchProfileName": {
+    "Development": {
       "commandName": "Project",
       "commandLineArgs": "",
-      "environmentVariables": {},
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
       "workingDirectory": "/Users/loganbussell/src/docker-tools"
     }
   }

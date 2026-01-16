@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,13 +11,16 @@ using PipelineMonitor.AzureDevOps;
 using PipelineMonitor.Logging;
 
 var builder = Host.CreateApplicationBuilder();
+builder.Configuration.SetBasePath(AppContext.BaseDirectory);
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+Console.WriteLine(builder.Configuration.GetDebugView());
 
 builder.Services.TryAddPipelinesService();
 builder.Services.TryAddOrganizationDiscoveryService();
 builder.Services.TryAddRepoInfoResolver();
 
 builder.Logging.ClearProviders();
-builder.Logging.AddFileLogger();
+builder.Logging.AddFileLogger(builder.Configuration);
 
 var host = builder.Build();
 
