@@ -83,6 +83,7 @@
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="CliWrap" />
+    <PackageReference Include="Humanizer.Core" />
     <PackageReference Include="ConsoleAppFramework" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" />

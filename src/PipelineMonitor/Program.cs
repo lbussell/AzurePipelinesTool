@@ -157,7 +157,7 @@ internal sealed class App(
         IEnumerable<IRenderable> content =
         [
             new Markup($"Recent Runs for [bold green]{pipeline.Name}[/]:").PadBottom(),
-            ..runs.Select(run => run.SingleLineDisplay.PadBottom())
+            runs.ToTable(),
         ];
 
         IRenderable display = new Rows(content);

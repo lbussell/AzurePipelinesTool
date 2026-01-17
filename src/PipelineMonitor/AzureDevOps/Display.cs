@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using Humanizer;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -18,21 +19,14 @@ internal static class Display
     {
         public IRenderable ResultSymbol => new PipelineRunResultRenderable(run.Result);
 
-        public IRenderable SingleLineDisplay {
+        public IRenderable RunDetails
+        {
             get
             {
-                // var symbol = run.Result switch
-                // {
-                //     "succeeded" => "[green][[✓]][/]",
-                //     "failed" => "[red][[✗]][/]",
-                //     "canceled" => "[yellow][[!]][/]",
-                //     _ => "[grey][[?]][/]"
-                // };
-
                 var titleRow = new Markup($"#[bold]{run.Name}[/] • {run.Commit?.Message}");
 
                 var metadataRow = new Columns([
-                    new Markup($"[dim]Manually run by <whoever>[/]"),
+                    new Markup($"[dim]Run by someone...[/]"),
                     new Markup("[dim]•[/]"),
                     new Markup($"[dim]branch/name[/]"),
                     new Markup("[dim]•[/]"),
@@ -40,19 +34,41 @@ internal static class Display
                 ]);
                 metadataRow.Expand = false;
 
-                IEnumerable<IRenderable> content =
-                [
-                    titleRow,
-                    metadataRow,
-                ];
-
-                return new Grid()
-                    .AddColumn()
-                    .AddColumn()
-                    .AddRow(run.ResultSymbol, new Rows(content));
-
-                // return new Markup($"Run [bold yellow]{run.Id}[/] - [green]{run.Result}[/] - [blue]{run.Result}[/] - [dim]{run.QueueTime:u}[/]");
+                return new Rows([titleRow, metadataRow]);
             }
+        }
+
+        public IRenderable TimeDetails
+        {
+            get
+            {
+                var queueTime = run.Started?.Humanize() ?? "";
+                var duration = run.Started.HasValue && run.Finished.HasValue
+                    ? (run.Finished.Value - run.Started.Value).Humanize(precision: 2, minUnit: TimeUnit.Second)
+                    : "";
+                return new Rows([
+                    new Markup($"[dim]{queueTime}[/]"),
+                    new Markup($"[dim]{duration}[/]")
+                ]);
+            }
+        }
+    }
+
+    extension(IEnumerable<PipelineRunInfo> runs)
+    {
+        public IRenderable ToTable()
+        {
+            var grid = new Grid()
+                .AddColumn()
+                .AddColumn()
+                .AddColumn(new GridColumn().NoWrap().RightAligned());
+
+            grid.AddRow(new Markup(""), new Markup("[dim]Description[/]").PadBottom(), new Markup(""));
+
+            foreach (var run in runs)
+                grid.AddRow(run.ResultSymbol, run.RunDetails.PadBottom(), run.TimeDetails);
+
+            return grid;
         }
     }
 
