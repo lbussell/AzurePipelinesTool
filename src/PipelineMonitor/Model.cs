@@ -27,7 +27,8 @@ internal sealed record PipelineRunInfo(
     DateTimeOffset? Started,
     DateTimeOffset? Finished,
     CommitInfo? Commit,
-    string Url);
+    string Url,
+    IEnumerable<StageInfo> Stages);
 
 internal enum PipelineRunResult
 {
@@ -39,3 +40,5 @@ internal enum PipelineRunResult
 }
 
 internal sealed record CommitInfo(string Sha, string Message, string Author, DateTime? Date);
+
+internal sealed record StageInfo(string Name, string State, PipelineRunResult Result);
