@@ -6,6 +6,7 @@ using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.TeamFoundation.Build.WebApi;
+using Microsoft.TeamFoundation.Work.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using PipelineMonitor.Authentication;
 using PipelineMonitor.Git;
@@ -109,6 +110,7 @@ internal sealed class PipelinesService(
         var connection = _vssConnectionProvider.GetConnection(org.Uri);
         var client = connection.GetClient<PipelinesHttpClient>();
         var buildsClient = connection.GetClient<BuildHttpClient>();
+        // var workClient = connection.GetClient<>();
 
         var builds = await buildsClient.GetBuildsAsync2(
             project: project.Name,
@@ -116,9 +118,14 @@ internal sealed class PipelinesService(
             top: top,
             cancellationToken: ct);
 
+        // var work = workClient.get
+
         foreach (var build in builds)
         {
-            var changes = await buildsClient.GetBuildChangesAsync2(project.Name, build.Id);
+            var changesTask = buildsClient.GetBuildChangesAsync2(project.Name, build.Id);
+            var timelineTask = buildsClient.GetBuildTimelineAsync(project.Name, build.Id, cancellationToken: ct);
+
+            var changes = await changesTask;
             var change = changes.FirstOrDefault();
             var commit = change is not null
                 ? new CommitInfo(
@@ -137,6 +144,21 @@ internal sealed class PipelinesService(
                 _ => PipelineRunResult.None,
             };
 
+            var timeline = await timelineTask;
+            var stages = timeline.Records.Where(r => r.RecordType == "Stage").ToList();
+            var stageInfos = stages.Select(stage =>
+                new StageInfo(
+                    Name: stage.Name,
+                    State: stage.State?.ToString() ?? "Unknown",
+                    Result: stage.Result switch
+                    {
+                        TaskResult.Succeeded => PipelineRunResult.Succeeded,
+                        TaskResult.SucceededWithIssues => PipelineRunResult.PartiallySucceeded,
+                        TaskResult.Failed => PipelineRunResult.Failed,
+                        TaskResult.Canceled => PipelineRunResult.Canceled,
+                        _ => PipelineRunResult.None,
+                    }));
+
             yield return new PipelineRunInfo(
                 Name: build.BuildNumber,
                 Id: new RunId(build.Id),
@@ -145,30 +167,9 @@ internal sealed class PipelinesService(
                 Started: build.QueueTime,
                 Finished: build.FinishTime,
                 Commit: commit,
-                Url: build.Url);
+                Url: build.Url,
+                Stages: stageInfos);
         }
-
-        // var report = await buildsClient.GetBuildReportAsync(project.Name, someBuild.Id);
-        // buildsClient.GetBuildLogLinesAsync()
-
-        // var runs = await client.ListRunsAsync(
-        //     project: project.Name,
-        //     pipelineId: pipelineId.Value,
-        //     cancellationToken: ct);
-
-        // return builds
-        // .Take(top)
-        // .Select(run => new PipelineRunInfo(
-        //     Name: run.Name,
-        //     Id: new RunId(run.Id),
-        //     State: run.State.ToString(),
-        //     Result: run.Result?.ToString(),
-        //     CreatedDate: run.CreatedDate,
-        //     FinishedDate: run.FinishedDate,
-        //     Url: run.Url?.ToString() ?? string.Empty))
-        // .ToList();
-
-        // return [];
     }
 
     public async IAsyncEnumerable<PipelineRunInfo> GetRunsForLocalPipelineAsync(
