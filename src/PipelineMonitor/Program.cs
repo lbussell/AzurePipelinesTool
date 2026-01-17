@@ -25,7 +25,10 @@ builder.Services.TryAddPipelineYamlService();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddFileLogger(builder.Configuration);
+
+#if DEBUG
 builder.Logging.AddLogLocationOnExit();
+#endif
 
 var consoleAppBuilder = builder.ToConsoleAppBuilder();
 consoleAppBuilder.Add<App>();
@@ -35,10 +38,12 @@ await runTask;
 
 internal sealed class App(
     IAnsiConsole ansiConsole,
-    IInteractionService interactionService)
+    IInteractionService interactionService,
+    PipelinesService pipelinesService)
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly IInteractionService _interactionService = interactionService;
+    private readonly PipelinesService _pipelinesService = pipelinesService;
 
     [Command("discover")]
     public async Task DiscoverPipelinesAsync([FromServices] PipelinesService pipelinesService)
@@ -62,38 +67,16 @@ internal sealed class App(
                 $"[bold green]{pipeline.Name}[/]");
 
         _ansiConsole.Write(table);
+        _ansiConsole.WriteLine();
     }
 
     [Command("info")]
-    public async Task ShowPipelineInfoAsync(
-        [FromServices] PipelinesService pipelinesService,
-        [Argument] string definitionPath)
+    public async Task ShowPipelineInfoAsync([Argument] string definitionPath)
     {
-        var pipelineFile = new FileInfo(definitionPath);
-        if (!pipelineFile.Exists)
-        {
-            _ansiConsole.MarkupLine($"[red]Error:[/] Definition file '{definitionPath}' does not exist.");
-            return;
-        }
-
-        var pipelinesTask = pipelinesService
-            .GetLocalPipelinesAsync()
-            .ToListAsync()
-            .AsTask();
-
-        List<LocalPipelineInfo> pipelines = await _interactionService
-            .ShowStatusAsync("Loading...", () => pipelinesTask);
-
-        var thisPipeline = pipelines.FirstOrDefault(pipeline =>
-            pipeline.DefinitionFile.FullName.Equals(pipelineFile.FullName));
-
-        if (thisPipeline is null)
-        {
-            _ansiConsole.MarkupLine($"[red]Error:[/] No pipeline found for definition file '{definitionPath}'.");
-            return;
-        }
-
-        _ansiConsole.MarkupLine($"[blue]{thisPipeline.RelativePath}[/] refers to pipeline [bold green]{thisPipeline.Name}[/] [dim](ID: {thisPipeline.Id.Value})[/]");
+        var pipeline = await GetLocalPipelineAsync(definitionPath);
+        if (pipeline is null) return;
+        _ansiConsole.Write(pipeline.SingleLineDisplay);
+        _ansiConsole.WriteLine();
     }
 
     [Command("parameters")]
@@ -101,32 +84,27 @@ internal sealed class App(
         [FromServices] IPipelineYamlService pipelineYamlService,
         [Argument] string definitionPath)
     {
-        var pipelineFile = new FileInfo(definitionPath);
-        if (!pipelineFile.Exists)
+        var pipeline = await GetLocalPipelineAsync(definitionPath);
+        if (pipeline is null) return;
+
+        var parseTask = pipelineYamlService.ParseAsync(pipeline.DefinitionFile.FullName);
+        var pipelineYaml = await _interactionService.ShowStatusAsync("Parsing YAML...", () => parseTask);
+        if (pipelineYaml is null)
         {
-            _ansiConsole.MarkupLine($"[red]Error:[/] Definition file '{definitionPath}' does not exist.");
+            _interactionService.DisplayError("Failed to parse pipeline YAML file.");
             return;
         }
 
-        var parseTask = pipelineYamlService.ParseAsync(pipelineFile.FullName);
-        var pipeline = await _interactionService.ShowStatusAsync("Parsing YAML...", () => parseTask);
-
-        if (pipeline is null)
+        if (pipelineYaml.Parameters.Count == 0)
         {
-            _ansiConsole.MarkupLine("[red]Error:[/] Failed to parse pipeline YAML file.");
-            return;
-        }
-
-        if (pipeline.Parameters.Count == 0)
-        {
-            _ansiConsole.MarkupLine("[yellow]No parameters defined in this pipeline.[/]");
+            _interactionService.DisplayWarning("No parameters defined in this pipeline.");
             return;
         }
 
         IRenderable title = new Markup("[bold]Parameters[/]").PadVertical();
         List<IRenderable> content = [title];
 
-        foreach (var param in pipeline.Parameters)
+        foreach (var param in pipelineYaml.Parameters)
         {
             List<IRenderable> paramContent = [];
 
@@ -151,5 +129,51 @@ internal sealed class App(
 
         var display = new Rows(content);
         _ansiConsole.Write(display);
+        _ansiConsole.WriteLine();
+    }
+
+    [Command("runs")]
+    public async Task ShowRunsAsync([Argument] string definitionPath)
+    {
+        var pipeline = await GetLocalPipelineAsync(definitionPath);
+        if (pipeline is null) return;
+
+        return;
+    }
+
+    private async Task<IEnumerable<LocalPipelineInfo>> GetLocalPipelinesAsync()
+    {
+        var pipelinesTask = _pipelinesService
+            .GetLocalPipelinesAsync()
+            .ToListAsync()
+            .AsTask();
+
+        List<LocalPipelineInfo> pipelines = await _interactionService
+            .ShowStatusAsync("Loading...", () => pipelinesTask);
+
+        return pipelines;
+    }
+
+    private async Task<LocalPipelineInfo?> GetLocalPipelineAsync(string definitionPath)
+    {
+        var pipelines = await GetLocalPipelinesAsync();
+        var pipelineFile = new FileInfo(definitionPath);
+
+        if (!pipelineFile.Exists)
+        {
+            _interactionService.DisplayError($"Definition file '{definitionPath}' does not exist.");
+            return null;
+        }
+
+        var thisPipeline = pipelines.FirstOrDefault(pipeline =>
+            pipeline.DefinitionFile.FullName.Equals(pipelineFile.FullName));
+
+        if (thisPipeline is null)
+        {
+            _interactionService.DisplayError($"No pipeline found for definition file '{definitionPath}'.");
+            return null;
+        }
+
+        return thisPipeline;
     }
 }

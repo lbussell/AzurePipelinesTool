@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -11,12 +12,20 @@ namespace PipelineMonitor;
 internal interface IInteractionService
 {
     Task<T> ShowStatusAsync<T>(string statusText, Func<Task<T>> action);
+
     void DisplaySubtleMessage(string message, bool escapeMarkup = true);
+
+    void DisplayError(string message, bool escapeMarkup = true);
+
+    void DisplayWarning(string message, bool escapeMarkup = true);
 }
 
-internal sealed class InteractionService(IAnsiConsole ansiConsole) : IInteractionService
+internal sealed class InteractionService(
+    IAnsiConsole ansiConsole,
+    IHostApplicationLifetime applicationLifetime) : IInteractionService
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
+    private readonly IHostApplicationLifetime _applicationLifetime = applicationLifetime;
 
     public async Task<T> ShowStatusAsync<T>(string statusText, Func<Task<T>> action)
     {
@@ -31,6 +40,19 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole) : IInteractio
         var displayMessage = escapeMarkup ? message.EscapeMarkup() : message;
         IRenderable text = new Markup($"[dim]{displayMessage}[/]");
         _ansiConsole.Write(text);
+        _ansiConsole.WriteLine();
+    }
+
+    public void DisplayError(string message, bool escapeMarkup = true) =>
+        DisplaySpecialMessage("Error", "red", message, escapeMarkup);
+
+    public void DisplayWarning(string message, bool escapeMarkup = true) =>
+        DisplaySpecialMessage("Warning", "yellow", message, escapeMarkup);
+
+    private void DisplaySpecialMessage(string messageType, string color, string message, bool escapeMarkup)
+    {
+        var displayMessage = escapeMarkup ? message.EscapeMarkup() : message;
+        _ansiConsole.MarkupLine($"[{color}][[{messageType}]][/] {displayMessage}");
     }
 }
 
