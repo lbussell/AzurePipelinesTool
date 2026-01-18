@@ -40,7 +40,7 @@ This example serves as:
 
 ### Total Parameters
 
-The file contains **11 parameters** covering the 5 interactive parameter types (String, StringList, Number, Boolean, Object), each with:
+The file contains **12 parameters** covering the 5 interactive parameter types (String, StringList, Number, Boolean, Object):
 - Parameters with default values
 - Parameters without default values
 - Additional variations (e.g., with allowed values)

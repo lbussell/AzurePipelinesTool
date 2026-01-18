@@ -330,7 +330,7 @@ public class PipelineYamlServiceTests
 
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.Parameters);
-        Assert.IsGreaterThanOrEqualTo(11, result.Parameters.Count, $"Expected at least 11 parameters, got {result.Parameters.Count}");
+        Assert.IsGreaterThanOrEqualTo(12, result.Parameters.Count, $"Expected at least 12 parameters, got {result.Parameters.Count}");
 
         // Verify we have parameters of each interactive type (with and without defaults)
         var parametersByType = result.Parameters.GroupBy(p => p.ParameterType).ToDictionary(g => g.Key, g => g.ToList());
