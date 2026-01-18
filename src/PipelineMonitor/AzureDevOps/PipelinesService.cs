@@ -186,6 +186,36 @@ internal sealed class PipelinesService(
         await foreach (var run in runs.WithCancellation(ct))
             yield return run;
     }
+
+    public async Task<IReadOnlyList<PipelineVariableInfo>> GetVariablesForLocalPipelineAsync(
+        PipelineId pipelineId,
+        CancellationToken ct = default)
+    {
+        var repoInfo = await _repoInfoResolver.ResolveAsync(cancellationToken: ct);
+        if (repoInfo.Organization is null || repoInfo.Project is null)
+            return [];
+
+        var connection = _vssConnectionProvider.GetConnection(repoInfo.Organization.Uri);
+        var buildsClient = connection.GetClient<BuildHttpClient>();
+
+        var buildDefinition = await buildsClient.GetDefinitionAsync(
+            project: repoInfo.Project.Name,
+            definitionId: pipelineId.Value,
+            cancellationToken: ct);
+
+        if (buildDefinition.Variables is null)
+            return [];
+
+        var variables = buildDefinition.Variables
+            .Select(kvp => new PipelineVariableInfo(
+                Name: kvp.Key,
+                Value: kvp.Value.Value ?? string.Empty,
+                IsSecret: kvp.Value.IsSecret == true,
+                AllowOverride: kvp.Value.AllowOverride == true))
+            .ToList();
+
+        return variables;
+    }
 }
 
 internal static class PipelinesServiceExtensions
