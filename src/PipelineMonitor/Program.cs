@@ -156,7 +156,7 @@ internal sealed class App(
 
         foreach (var variable in variables)
         {
-            var valueDisplay = variable.IsSecret ? "[dim]***[/]" : variable.Value.EscapeMarkup();
+            var valueDisplay = variable.IsSecret ? "[dim]***[/]" : (variable.Value ?? string.Empty).EscapeMarkup();
             var secretDisplay = variable.IsSecret ? "[yellow]Yes[/]" : "No";
             var allowOverrideDisplay = variable.AllowOverride ? "Yes" : "No";
 
