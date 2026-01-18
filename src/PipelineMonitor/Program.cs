@@ -132,6 +132,45 @@ internal sealed class App(
         _ansiConsole.WriteLine();
     }
 
+    [Command("variables")]
+    public async Task ShowVariablesAsync([Argument] string definitionPath)
+    {
+        var pipeline = await GetLocalPipelineAsync(definitionPath);
+        if (pipeline is null) return;
+
+        var variablesTask = _pipelinesService.GetVariablesForLocalPipelineAsync(pipeline.Id);
+        var variables = await _interactionService.ShowStatusAsync("Loading variables...", () => variablesTask);
+
+        if (variables.Count == 0)
+        {
+            _interactionService.DisplayWarning("No variables defined in this pipeline.");
+            return;
+        }
+
+        var table = new Table()
+            .Border(TableBorder.Simple)
+            .AddColumn("Name")
+            .AddColumn("Value")
+            .AddColumn("Secret")
+            .AddColumn("Allow Override");
+
+        foreach (var variable in variables)
+        {
+            var valueDisplay = variable.IsSecret ? "[dim]***[/]" : variable.Value.EscapeMarkup();
+            var secretDisplay = variable.IsSecret ? "[yellow]Yes[/]" : "No";
+            var allowOverrideDisplay = variable.AllowOverride ? "Yes" : "No";
+
+            table.AddRow(
+                $"[blue]{variable.Name.EscapeMarkup()}[/]",
+                valueDisplay,
+                secretDisplay,
+                allowOverrideDisplay);
+        }
+
+        _ansiConsole.Write(table);
+        _ansiConsole.WriteLine();
+    }
+
     [Command("runs")]
     public async Task ShowRunsAsync(
         [Argument] string definitionPath,
