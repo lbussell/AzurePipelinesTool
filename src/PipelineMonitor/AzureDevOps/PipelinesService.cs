@@ -193,7 +193,7 @@ internal sealed class PipelinesService(
     {
         var repoInfo = await _repoInfoResolver.ResolveAsync(cancellationToken: ct);
         if (repoInfo.Organization is null || repoInfo.Project is null)
-            return Array.Empty<PipelineVariableInfo>();
+            return [];
 
         var connection = _vssConnectionProvider.GetConnection(repoInfo.Organization.Uri);
         var buildsClient = connection.GetClient<BuildHttpClient>();
@@ -204,7 +204,7 @@ internal sealed class PipelinesService(
             cancellationToken: ct);
 
         if (buildDefinition.Variables is null)
-            return Array.Empty<PipelineVariableInfo>();
+            return [];
 
         var variables = buildDefinition.Variables
             .Select(kvp => new PipelineVariableInfo(
