@@ -12,7 +12,7 @@ internal static class Display
     extension(LocalPipelineInfo pipeline)
     {
         public IRenderable SingleLineDisplay =>
-            new Markup($"[blue]{pipeline.RelativePath}[/] refers to pipeline [bold green]{pipeline.Name}[/] [dim](ID: {pipeline.Id.Value})[/]");
+            new Markup($"[blue]{Markup.Escape(pipeline.RelativePath)}[/] refers to pipeline [bold green]{Markup.Escape(pipeline.Name)}[/] [dim](ID: {pipeline.Id.Value})[/]");
     }
 
     extension(PipelineRunInfo run)
@@ -23,14 +23,14 @@ internal static class Display
         {
             get
             {
-                var titleRow = new Markup($"#[bold]{run.Name}[/] • {run.Commit?.Message}");
+                var titleRow = new Markup($"#[bold]{Markup.Escape(run.Name)}[/] • {Markup.Escape(run.Commit?.Message ?? "")}");
 
                 var metadataRow = new Columns([
                     new Markup($"[dim]Run by someone...[/]"),
                     new Markup("[dim]•[/]"),
                     new Markup($"[dim]branch/name[/]"),
                     new Markup("[dim]•[/]"),
-                    new Markup($"[dim]{run.Commit?.Sha[..10]}[/]"),
+                    new Markup($"[dim]{Markup.Escape(run.Commit?.Sha[..10] ?? "")}[/]"),
                 ]);
                 metadataRow.Expand = false;
 
