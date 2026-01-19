@@ -33,6 +33,10 @@ builder.Logging.AddLogLocationOnExit();
 var consoleAppBuilder = builder.ToConsoleAppBuilder();
 consoleAppBuilder.Add<App>();
 
+#if DEBUG
+consoleAppBuilder.Add<TestCommands>();
+#endif
+
 var runTask = consoleAppBuilder.RunAsync(args);
 await runTask;
 

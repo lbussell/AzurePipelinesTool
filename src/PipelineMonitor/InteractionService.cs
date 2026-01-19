@@ -11,6 +11,8 @@ namespace PipelineMonitor;
 
 internal interface IInteractionService
 {
+    bool IsInteractive { get; }
+
     Task<T> ShowStatusAsync<T>(string statusText, Func<Task<T>> action);
 
     void DisplaySubtleMessage(string message, bool escapeMarkup = true);
@@ -18,14 +20,26 @@ internal interface IInteractionService
     void DisplayError(string message, bool escapeMarkup = true);
 
     void DisplayWarning(string message, bool escapeMarkup = true);
+
+    Task<T> PromptAsync<T>(string prompt, T? defaultValue = default) where T : notnull;
+
+    Task<T> SelectAsync<T>(string prompt, IEnumerable<T> choices,
+        Func<T, string>? displaySelector = null, T? defaultValue = default) where T : notnull;
+
+    Task<IReadOnlyList<T>> MultiSelectAsync<T>(string prompt, IEnumerable<T> choices,
+        Func<T, string>? displaySelector = null, IEnumerable<T>? defaults = null,
+        bool required = false) where T : notnull;
+
+    Task<bool> ConfirmAsync(string prompt, bool defaultValue = false);
 }
 
-internal sealed class InteractionService(
-    IAnsiConsole ansiConsole,
-    IHostApplicationLifetime applicationLifetime) : IInteractionService
+internal sealed class InteractionService(IAnsiConsole ansiConsole) : IInteractionService
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
-    private readonly IHostApplicationLifetime _applicationLifetime = applicationLifetime;
+
+    public bool IsInteractive { get; } = !Console.IsInputRedirected
+        && !Console.IsOutputRedirected
+        && ansiConsole.Profile.Capabilities.Interactive;
 
     public async Task<T> ShowStatusAsync<T>(string statusText, Func<Task<T>> action)
     {
@@ -53,6 +67,75 @@ internal sealed class InteractionService(
     {
         var displayMessage = escapeMarkup ? message.EscapeMarkup() : message;
         _ansiConsole.MarkupLine($"[{color}][[{messageType}]][/] {displayMessage}");
+    }
+
+    public async Task<T> PromptAsync<T>(string prompt, T? defaultValue = default) where T : notnull
+    {
+        if (!IsInteractive)
+        {
+            if (defaultValue is not null) return defaultValue;
+            throw new InvalidOperationException($"Cannot prompt in non-interactive environment: {prompt}");
+        }
+
+        var textPrompt = new TextPrompt<T>(prompt);
+        if (defaultValue is not null) textPrompt.DefaultValue(defaultValue);
+
+        return await Task.Run(() => _ansiConsole.Prompt(textPrompt));
+    }
+
+    public async Task<T> SelectAsync<T>(
+        string prompt,
+        IEnumerable<T> choices,
+        Func<T, string>? displaySelector = null,
+        T? defaultValue = default
+    ) where T : notnull
+    {
+        var choicesList = choices.ToList();
+        if (!IsInteractive)
+        {
+            if (defaultValue is not null) return defaultValue;
+            if (choicesList.Count == 1) return choicesList[0];
+            throw new InvalidOperationException($"Cannot prompt in non-interactive environment: {prompt}");
+        }
+
+        // Reorder so default appears first (SelectionPrompt highlights first item by default)
+        if (defaultValue is not null && choicesList.Remove(defaultValue))
+            choicesList.Insert(0, defaultValue);
+
+        var selection = new SelectionPrompt<T>().Title(prompt).AddChoices(choicesList);
+        if (displaySelector is not null) selection.UseConverter(displaySelector);
+
+        return await Task.Run(() => _ansiConsole.Prompt(selection));
+    }
+
+    public async Task<IReadOnlyList<T>> MultiSelectAsync<T>(
+        string prompt,
+        IEnumerable<T> choices,
+        Func<T, string>? displaySelector = null,
+        IEnumerable<T>? defaults = null,
+        bool required = false
+    ) where T : notnull
+    {
+        if (!IsInteractive)
+            throw new InvalidOperationException($"Cannot prompt in non-interactive environment: {prompt}");
+
+        var multi = new MultiSelectionPrompt<T>().Title(prompt).AddChoices(choices);
+        if (required) multi.Required();
+        if (displaySelector is not null) multi.UseConverter(displaySelector);
+        if (defaults is not null)
+        {
+            foreach (var item in defaults) multi.Select(item);
+        }
+
+        return await Task.Run(() => _ansiConsole.Prompt(multi));
+    }
+
+    public async Task<bool> ConfirmAsync(string prompt, bool defaultValue = false)
+    {
+        if (!IsInteractive) return defaultValue;
+
+        var confirm = new ConfirmationPrompt(prompt) { DefaultValue = defaultValue };
+        return await Task.Run(() => _ansiConsole.Prompt(confirm));
     }
 }
 
