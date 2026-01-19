@@ -229,15 +229,23 @@ internal sealed class App(
             return null;
         }
 
-        var thisPipeline = pipelines.FirstOrDefault(pipeline =>
-            pipeline.DefinitionFile.FullName.Equals(pipelineFile.FullName));
+        var matchingPipelines = pipelines
+            .Where(pipeline =>
+                pipeline.DefinitionFile.FullName.Equals(pipelineFile.FullName))
+            .ToList();
 
-        if (thisPipeline is null)
-        {
+        var pipelineInfo = matchingPipelines.FirstOrDefault();
+
+        if (matchingPipelines.Count > 1)
+            // Prompt user to select which pipeline they meant
+            pipelineInfo = await _interactionService.SelectAsync(
+                "Multiple pipelines found for the specified definition file. Please select one:",
+                matchingPipelines,
+                pipeline => pipeline.Name);
+
+        if (pipelineInfo is null)
             _interactionService.DisplayError($"No pipeline found for definition file '{definitionPath}'.");
-            return null;
-        }
 
-        return thisPipeline;
+        return pipelineInfo;
     }
 }
