@@ -172,19 +172,14 @@ internal sealed class PipelinesService(
         }
     }
 
-    public async IAsyncEnumerable<PipelineRunInfo> GetRunsForLocalPipelineAsync(
-        PipelineId pipelineId,
+    public async IAsyncEnumerable<PipelineRunInfo> GetRunsAsync(
+        LocalPipelineInfo pipeline,
         int top = 10,
         [EnumeratorCancellation]
         CancellationToken ct = default)
     {
-        var repoInfo = await _repoInfoResolver.ResolveAsync(cancellationToken: ct);
-        if (repoInfo.Organization is null || repoInfo.Project is null) yield break;
-
-        var runs = GetRunsAsync(repoInfo.Organization, repoInfo.Project, pipelineId, top, ct);
-
-        await foreach (var run in runs.WithCancellation(ct))
-            yield return run;
+        var runs = GetRunsAsync(pipeline.Organization, pipeline.Project, pipeline.Id, top, ct);
+        await foreach (var run in runs.WithCancellation(ct)) yield return run;
     }
 
     public async Task<IReadOnlyList<PipelineVariableInfo>> GetVariablesAsync(

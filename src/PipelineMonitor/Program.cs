@@ -183,7 +183,7 @@ internal sealed class App(
         var pipeline = await GetLocalPipelineAsync(definitionPath);
         if (pipeline is null) return;
 
-        var runsTask = _pipelinesService.GetRunsForLocalPipelineAsync(pipeline.Id, top);
+        var pipelineRuns = _pipelinesService.GetRunsAsync(pipeline, top);
 
         var descriptionColumn = new TableColumn("Description");
         var table = new Table()
@@ -197,7 +197,7 @@ internal sealed class App(
             .Live(table)
             .StartAsync(async context =>
             {
-                await foreach (var run in runsTask)
+                await foreach (var run in pipelineRuns)
                 {
                     table.AddRow(run.ResultSymbol, run.RunDetails, run.StagesSummary, run.TimeDetails);
                     context.Refresh();
