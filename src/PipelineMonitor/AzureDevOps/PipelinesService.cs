@@ -113,15 +113,12 @@ internal sealed class PipelinesService(
         var connection = _vssConnectionProvider.GetConnection(org.Uri);
         var client = connection.GetClient<PipelinesHttpClient>();
         var buildsClient = connection.GetClient<BuildHttpClient>();
-        // var workClient = connection.GetClient<>();
 
         var builds = await buildsClient.GetBuildsAsync2(
             project: project.Name,
             definitions: [pipelineId.Value],
             top: top,
             cancellationToken: ct);
-
-        // var work = workClient.get
 
         foreach (var build in builds)
         {
