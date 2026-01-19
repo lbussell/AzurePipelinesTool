@@ -142,7 +142,7 @@ internal sealed class App(
         var pipeline = await GetLocalPipelineAsync(definitionPath);
         if (pipeline is null) return;
 
-        var variablesTask = _pipelinesService.GetVariablesForLocalPipelineAsync(pipeline.Id);
+        var variablesTask = _pipelinesService.GetVariablesAsync(pipeline);
         var variables = await _interactionService.ShowStatusAsync("Loading variables...", () => variablesTask);
 
         if (variables.Count == 0)
