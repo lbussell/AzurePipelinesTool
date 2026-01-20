@@ -229,6 +229,11 @@ internal sealed class PipelinesService(
 
         foreach (var variable in variables)
         {
+            if (string.IsNullOrWhiteSpace(variable.Name))
+            {
+                continue; // Skip variables with null or empty names
+            }
+
             buildDefinition.Variables[variable.Name] = new BuildDefinitionVariable
             {
                 Value = variable.Value,

@@ -49,6 +49,11 @@ internal sealed class App(
     private readonly IInteractionService _interactionService = interactionService;
     private readonly PipelinesService _pipelinesService = pipelinesService;
 
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
     [Command("discover")]
     public async Task DiscoverPipelinesAsync([FromServices] PipelinesService pipelinesService)
     {
@@ -186,9 +191,7 @@ internal sealed class App(
         var variablesTask = _pipelinesService.GetVariablesAsync(pipeline);
         var variables = await _interactionService.ShowStatusAsync("Loading variables...", () => variablesTask);
 
-        var json = System.Text.Json.JsonSerializer.Serialize(
-            variables,
-            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        var json = System.Text.Json.JsonSerializer.Serialize(variables, JsonOptions);
 
         await File.WriteAllTextAsync(outputFile, json);
         _interactionService.DisplaySuccess($"Exported {variables.Count} variable(s) to {outputFile}");
