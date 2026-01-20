@@ -175,6 +175,59 @@ internal sealed class App(
         _ansiConsole.WriteLine();
     }
 
+    [Command("variables export")]
+    public async Task ExportVariablesAsync(
+        [Argument] string definitionPath,
+        [Argument] string outputFile)
+    {
+        var pipeline = await GetLocalPipelineAsync(definitionPath);
+        if (pipeline is null) return;
+
+        var variablesTask = _pipelinesService.GetVariablesAsync(pipeline);
+        var variables = await _interactionService.ShowStatusAsync("Loading variables...", () => variablesTask);
+
+        var json = System.Text.Json.JsonSerializer.Serialize(
+            variables,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+        await File.WriteAllTextAsync(outputFile, json);
+        _interactionService.DisplaySuccess($"Exported {variables.Count} variable(s) to {outputFile}");
+    }
+
+    [Command("variables import")]
+    public async Task ImportVariablesAsync(
+        [Argument] string definitionPath,
+        [Argument] string inputFile,
+        bool clear = false)
+    {
+        var pipeline = await GetLocalPipelineAsync(definitionPath);
+        if (pipeline is null) return;
+
+        if (!File.Exists(inputFile))
+        {
+            _interactionService.DisplayError($"Input file '{inputFile}' does not exist.");
+            return;
+        }
+
+        var json = await File.ReadAllTextAsync(inputFile);
+        var variables = System.Text.Json.JsonSerializer.Deserialize<List<PipelineVariableInfo>>(json);
+
+        if (variables is null || variables.Count == 0)
+        {
+            _interactionService.DisplayWarning("No variables found in the input file.");
+            return;
+        }
+
+        await _interactionService.ShowStatusAsync("Setting variables...", async () =>
+        {
+            await _pipelinesService.SetVariablesAsync(pipeline, variables, clear);
+            return true;
+        });
+
+        var actionDescription = clear ? "replaced with" : "imported";
+        _interactionService.DisplaySuccess($"Successfully {actionDescription} {variables.Count} variable(s).");
+    }
+
     [Command("runs")]
     public async Task ShowRunsAsync(
         [Argument] string definitionPath,

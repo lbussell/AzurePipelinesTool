@@ -21,6 +21,8 @@ internal interface IInteractionService
 
     void DisplayWarning(string message, bool escapeMarkup = true);
 
+    void DisplaySuccess(string message, bool escapeMarkup = true);
+
     Task<T> PromptAsync<T>(string prompt, T? defaultValue = default) where T : notnull;
 
     Task<T> SelectAsync<T>(string prompt, IEnumerable<T> choices,
@@ -62,6 +64,9 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole) : IInteractio
 
     public void DisplayWarning(string message, bool escapeMarkup = true) =>
         DisplaySpecialMessage("Warning", "yellow", message, escapeMarkup);
+
+    public void DisplaySuccess(string message, bool escapeMarkup = true) =>
+        DisplaySpecialMessage("Success", "green", message, escapeMarkup);
 
     private void DisplaySpecialMessage(string messageType, string color, string message, bool escapeMarkup)
     {

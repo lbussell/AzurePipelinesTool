@@ -207,6 +207,42 @@ internal sealed class PipelinesService(
 
         return variables;
     }
+
+    public async Task SetVariablesAsync(
+        LocalPipelineInfo pipeline,
+        IEnumerable<PipelineVariableInfo> variables,
+        bool clearExisting = false,
+        CancellationToken ct = default)
+    {
+        var connection = _vssConnectionProvider.GetConnection(pipeline.Organization.Uri);
+        var buildsClient = connection.GetClient<BuildHttpClient>();
+
+        var buildDefinition = await buildsClient.GetDefinitionAsync(
+            project: pipeline.Project.Name,
+            definitionId: pipeline.Id.Value,
+            cancellationToken: ct);
+
+        if (clearExisting)
+        {
+            buildDefinition.Variables.Clear();
+        }
+
+        foreach (var variable in variables)
+        {
+            buildDefinition.Variables[variable.Name] = new BuildDefinitionVariable
+            {
+                Value = variable.Value,
+                IsSecret = variable.IsSecret,
+                AllowOverride = variable.AllowOverride
+            };
+        }
+
+        await buildsClient.UpdateDefinitionAsync(
+            definition: buildDefinition,
+            project: pipeline.Project.Name,
+            definitionId: pipeline.Id.Value,
+            cancellationToken: ct);
+    }
 }
 
 internal static class PipelinesServiceExtensions
