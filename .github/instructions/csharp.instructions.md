@@ -60,3 +60,7 @@ Other patterns:
 - Comments inside methods should explain "why," not "what".
 - Comments should provide context and rationale behind the code.
 - Avoid redundant comments that restate the code - not all code needs comments.
+
+## Tests
+
+- Do not add "Arrange, Act, Assert" (AAA) comments in test methods. The test structure should be self-evident from the code.

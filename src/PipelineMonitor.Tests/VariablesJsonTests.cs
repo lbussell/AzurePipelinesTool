@@ -11,7 +11,6 @@ public sealed class VariablesJsonTests
     [TestMethod]
     public void VariableInfo_SerializesToJson()
     {
-        // Arrange
         var variables = new List<PipelineVariableInfo>
         {
             new("TestVar1", "Value1", false, true),
@@ -19,10 +18,8 @@ public sealed class VariablesJsonTests
             new("TestVar3", "", false, false)
         };
 
-        // Act
         var json = JsonSerializer.Serialize(variables, new JsonSerializerOptions { WriteIndented = true });
 
-        // Assert
         Assert.IsNotNull(json);
         StringAssert.Contains(json, "TestVar1");
         StringAssert.Contains(json, "Value1");
@@ -33,7 +30,6 @@ public sealed class VariablesJsonTests
     [TestMethod]
     public void VariableInfo_DeserializesFromJson()
     {
-        // Arrange
         var json = """
         [
           {
@@ -51,10 +47,8 @@ public sealed class VariablesJsonTests
         ]
         """;
 
-        // Act
         var variables = JsonSerializer.Deserialize<List<PipelineVariableInfo>>(json);
 
-        // Assert
         Assert.IsNotNull(variables);
         Assert.HasCount(2, variables);
         Assert.AreEqual("TestVar1", variables[0].Name);
@@ -70,7 +64,6 @@ public sealed class VariablesJsonTests
     [TestMethod]
     public void VariableInfo_RoundTripSerialization()
     {
-        // Arrange
         var originalVariables = new List<PipelineVariableInfo>
         {
             new("TestVar1", "Value1", false, true),
@@ -78,11 +71,9 @@ public sealed class VariablesJsonTests
             new("TestVar3", "Value3", false, false)
         };
 
-        // Act
         var json = JsonSerializer.Serialize(originalVariables);
         var deserializedVariables = JsonSerializer.Deserialize<List<PipelineVariableInfo>>(json);
 
-        // Assert
         Assert.IsNotNull(deserializedVariables);
         Assert.HasCount(originalVariables.Count, deserializedVariables);
         for (int i = 0; i < originalVariables.Count; i++)
@@ -97,11 +88,9 @@ public sealed class VariablesJsonTests
     [TestMethod]
     public void VariableInfo_InvalidJson_ThrowsJsonException()
     {
-        // Arrange
         var invalidJson = "{ invalid json }";
         var exceptionThrown = false;
 
-        // Act
         try
         {
             JsonSerializer.Deserialize<List<PipelineVariableInfo>>(invalidJson);
@@ -111,7 +100,6 @@ public sealed class VariablesJsonTests
             exceptionThrown = true;
         }
 
-        // Assert
         Assert.IsTrue(exceptionThrown, "Expected JsonException to be thrown for invalid JSON");
     }
 }
