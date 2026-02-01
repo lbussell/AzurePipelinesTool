@@ -85,7 +85,6 @@ internal sealed class App(
     public async Task ShowPipelineInfoAsync([Argument] string definitionPath)
     {
         var pipeline = await GetLocalPipelineAsync(definitionPath);
-        if (pipeline is null) return;
         _ansiConsole.Write(pipeline.SingleLineDisplay);
         _ansiConsole.WriteLine();
     }
@@ -96,15 +95,11 @@ internal sealed class App(
         [Argument] string definitionPath)
     {
         var pipeline = await GetLocalPipelineAsync(definitionPath);
-        if (pipeline is null) return;
 
         var parseTask = pipelineYamlService.ParseAsync(pipeline.DefinitionFile.FullName);
         var pipelineYaml = await _interactionService.ShowStatusAsync("Parsing YAML...", () => parseTask);
         if (pipelineYaml is null)
-        {
-            _interactionService.DisplayError("Failed to parse pipeline YAML file.");
-            return;
-        }
+            throw new UserFacingException("Failed to parse pipeline YAML file.");
 
         if (pipelineYaml.Parameters.Count == 0)
         {
@@ -147,7 +142,6 @@ internal sealed class App(
     public async Task ShowVariablesAsync([Argument] string definitionPath)
     {
         var pipeline = await GetLocalPipelineAsync(definitionPath);
-        if (pipeline is null) return;
 
         var variablesTask = _pipelinesService.GetVariablesAsync(pipeline);
         var variables = await _interactionService.ShowStatusAsync("Loading variables...", () => variablesTask);
@@ -188,7 +182,6 @@ internal sealed class App(
         [Argument] string outputFile)
     {
         var pipeline = await GetLocalPipelineAsync(definitionPath);
-        if (pipeline is null) return;
 
         var variablesTask = _pipelinesService.GetVariablesAsync(pipeline);
         var variables = await _interactionService.ShowStatusAsync("Loading variables...", () => variablesTask);
@@ -206,13 +199,9 @@ internal sealed class App(
         bool clear = false)
     {
         var pipeline = await GetLocalPipelineAsync(definitionPath);
-        if (pipeline is null) return;
 
         if (!File.Exists(inputFile))
-        {
-            _interactionService.DisplayError($"Input file '{inputFile}' does not exist.");
-            return;
-        }
+            throw new UserFacingException($"Input file '{inputFile}' does not exist.");
 
         List<PipelineVariableInfo>? variables;
         try
@@ -222,8 +211,7 @@ internal sealed class App(
         }
         catch (System.Text.Json.JsonException ex)
         {
-            _interactionService.DisplayError($"Failed to parse JSON file: {ex.Message}");
-            return;
+            throw new UserFacingException($"Failed to parse JSON file: {ex.Message}", ex);
         }
 
         if (variables is null || variables.Count == 0)
@@ -248,7 +236,6 @@ internal sealed class App(
         int top = 10)
     {
         var pipeline = await GetLocalPipelineAsync(definitionPath);
-        if (pipeline is null) return;
 
         var pipelineRuns = _pipelinesService.GetRunsAsync(pipeline, top);
 
@@ -285,16 +272,13 @@ internal sealed class App(
         return pipelines;
     }
 
-    private async Task<LocalPipelineInfo?> GetLocalPipelineAsync(string definitionPath)
+    private async Task<LocalPipelineInfo> GetLocalPipelineAsync(string definitionPath)
     {
         var pipelines = await GetLocalPipelinesAsync();
         var pipelineFile = new FileInfo(definitionPath);
 
         if (!pipelineFile.Exists)
-        {
-            _interactionService.DisplayError($"Definition file '{definitionPath}' does not exist.");
-            return null;
-        }
+            throw new UserFacingException($"Definition file '{definitionPath}' does not exist.");
 
         var matchingPipelines = pipelines
             .Where(pipeline =>
@@ -311,7 +295,7 @@ internal sealed class App(
                 pipeline => pipeline.Name);
 
         if (pipelineInfo is null)
-            _interactionService.DisplayError($"No pipeline found for definition file '{definitionPath}'.");
+            throw new UserFacingException($"No pipeline found for definition file '{definitionPath}'.");
 
         return pipelineInfo;
     }
