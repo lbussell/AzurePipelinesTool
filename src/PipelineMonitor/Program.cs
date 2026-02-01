@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using PipelineMonitor;
 using PipelineMonitor.AzureDevOps;
 using PipelineMonitor.AzureDevOps.Yaml;
+using PipelineMonitor.Filters;
 using PipelineMonitor.Logging;
 
 using Spectre.Console;
@@ -31,6 +32,7 @@ builder.Logging.AddLogLocationOnExit();
 #endif
 
 var consoleAppBuilder = builder.ToConsoleAppBuilder();
+consoleAppBuilder.UseFilter<ExceptionHandlingFilter>();
 consoleAppBuilder.Add<App>();
 
 #if DEBUG
