@@ -119,6 +119,97 @@ internal sealed class GitService(
             return null;
         }
     }
+
+    /// <summary>
+    /// Gets the name of the current branch.
+    /// </summary>
+    public async Task<string?> GetCurrentBranchAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await _processRunner.ExecuteAsync(GitExecutable, "rev-parse --abbrev-ref HEAD", cancellationToken: cancellationToken);
+        var branch = result.StandardOutput.Trim();
+        return string.IsNullOrEmpty(branch) ? null : branch;
+    }
+
+    /// <summary>
+    /// Gets the upstream tracking branch for the current branch.
+    /// </summary>
+    /// <returns>The upstream branch (e.g., "origin/main"), or null if not set.</returns>
+    public async Task<string?> GetUpstreamBranchAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await _processRunner.ExecuteAsync(GitExecutable, "rev-parse --abbrev-ref @{upstream}", allowNonZeroExitCode: true, cancellationToken: cancellationToken);
+        if (result.ExitCode != 0)
+            return null;
+
+        var upstream = result.StandardOutput.Trim();
+        return string.IsNullOrEmpty(upstream) ? null : upstream;
+    }
+
+    /// <summary>
+    /// Gets the URL for a specific remote.
+    /// </summary>
+    public async Task<string?> GetRemoteUrlByNameAsync(string remoteName, CancellationToken cancellationToken = default)
+    {
+        var result = await _processRunner.ExecuteAsync(GitExecutable, $"remote get-url {remoteName}", allowNonZeroExitCode: true, cancellationToken: cancellationToken);
+        if (result.ExitCode != 0)
+            return null;
+
+        var url = result.StandardOutput.Trim();
+        return string.IsNullOrEmpty(url) ? null : url;
+    }
+
+    /// <summary>
+    /// Gets the number of commits ahead and behind the upstream branch.
+    /// </summary>
+    /// <returns>A tuple of (ahead, behind) counts, or null if no upstream or error.</returns>
+    public async Task<(int Ahead, int Behind)?> GetAheadBehindAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await _processRunner.ExecuteAsync(GitExecutable, "rev-list --left-right --count @{upstream}...HEAD", allowNonZeroExitCode: true, cancellationToken: cancellationToken);
+        if (result.ExitCode != 0)
+            return null;
+
+        // Output format: "behind\tahead"
+        var parts = result.StandardOutput.Trim().Split('\t', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 2 && int.TryParse(parts[0], out var behind) && int.TryParse(parts[1], out var ahead))
+            return (ahead, behind);
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the working tree status (uncommitted changes).
+    /// </summary>
+    public async Task<WorkingTreeStatus> GetWorkingTreeStatusAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await _processRunner.ExecuteAsync(GitExecutable, "status --porcelain", cancellationToken: cancellationToken);
+        var lines = result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        int staged = 0, modified = 0, untracked = 0;
+
+        foreach (var line in lines)
+        {
+            if (line.Length < 2) continue;
+
+            var indexStatus = line[0];
+            var workTreeStatus = line[1];
+
+            if (indexStatus == '?' && workTreeStatus == '?')
+                untracked++;
+            else if (indexStatus != ' ' && indexStatus != '?')
+                staged++;
+            else if (workTreeStatus != ' ')
+                modified++;
+        }
+
+        return new WorkingTreeStatus(staged, modified, untracked);
+    }
+}
+
+/// <summary>
+/// Represents the status of the Git working tree.
+/// </summary>
+internal sealed record WorkingTreeStatus(int Staged, int Modified, int Untracked)
+{
+    public bool IsClean => Staged == 0 && Modified == 0 && Untracked == 0;
 }
 
 internal static class GitServiceExtensions
