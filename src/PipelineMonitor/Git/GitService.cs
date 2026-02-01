@@ -202,6 +202,70 @@ internal sealed class GitService(
 
         return new WorkingTreeStatus(staged, modified, untracked);
     }
+
+    /// <summary>
+    /// Stages all changes (git add -A).
+    /// </summary>
+    public async Task StageAllAsync(CancellationToken cancellationToken = default)
+    {
+        await _processRunner.ExecuteAsync(GitExecutable, "add -A", cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Commits staged changes with the given message.
+    /// </summary>
+    public async Task<string> CommitAsync(string message, CancellationToken cancellationToken = default)
+    {
+        var escapedMessage = message.Replace("\"", "\\\"");
+        var result = await _processRunner.ExecuteAsync(GitExecutable, $"commit -m \"{escapedMessage}\"", cancellationToken: cancellationToken);
+        return result.StandardOutput.Trim();
+    }
+
+    /// <summary>
+    /// Pushes to the upstream branch.
+    /// </summary>
+    public async Task<string> PushAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await _processRunner.ExecuteAsync(GitExecutable, "push", allowNonZeroExitCode: true, cancellationToken: cancellationToken);
+        if (result.ExitCode != 0)
+            throw new UserFacingException($"Git push failed: {result.StandardError.Trim()}");
+
+        // Git push outputs to stderr for progress, stdout for results
+        return string.IsNullOrEmpty(result.StandardOutput) ? result.StandardError.Trim() : result.StandardOutput.Trim();
+    }
+
+    /// <summary>
+    /// Pushes the current HEAD to a specific branch on a remote.
+    /// </summary>
+    public async Task<string> PushToRemoteBranchAsync(string remote, string branch, CancellationToken cancellationToken = default)
+    {
+        var result = await _processRunner.ExecuteAsync(GitExecutable, $"push {remote} HEAD:{branch}", allowNonZeroExitCode: true, cancellationToken: cancellationToken);
+        if (result.ExitCode != 0)
+            throw new UserFacingException($"Git push failed: {result.StandardError.Trim()}");
+
+        return string.IsNullOrEmpty(result.StandardOutput) ? result.StandardError.Trim() : result.StandardOutput.Trim();
+    }
+
+    /// <summary>
+    /// Finds the first remote that is an Azure DevOps URL.
+    /// </summary>
+    public async Task<string?> GetAzureDevOpsRemoteNameAsync(Func<string, bool> isAzureDevOpsUrl, CancellationToken cancellationToken = default)
+    {
+        var remotes = await GetRemotesAsync(cancellationToken);
+        if (remotes is null)
+            return null;
+
+        foreach (var (key, url) in remotes)
+        {
+            if (key.EndsWith("(push)") && isAzureDevOpsUrl(url))
+            {
+                // Extract remote name from key like "origin(push)"
+                return key[..^6]; // Remove "(push)" suffix
+            }
+        }
+
+        return null;
+    }
 }
 
 /// <summary>
