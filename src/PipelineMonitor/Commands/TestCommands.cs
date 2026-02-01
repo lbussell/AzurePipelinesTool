@@ -3,7 +3,7 @@
 
 using ConsoleAppFramework;
 
-namespace PipelineMonitor;
+namespace PipelineMonitor.Commands;
 
 internal sealed class TestCommands(IInteractionService interactionService)
 {
