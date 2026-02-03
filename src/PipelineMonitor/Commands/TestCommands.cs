@@ -31,6 +31,15 @@ internal sealed class TestCommands(
         Console.WriteLine(ok ? "OK!" : "Not OK!");
     }
 
+    [Command("tag")]
+    public async Task SelectTagAsync()
+    {
+        var tag = await _interactionService.SelectAsync(
+            prompt: "Enter a tag for the pipeline:",
+            suggestions: ["foo", "bar", "baz"]);
+        Console.WriteLine($"Selected tag: {tag}");
+    }
+
     [Command("gitstatus")]
     public async Task ShowGitStatusAsync()
     {

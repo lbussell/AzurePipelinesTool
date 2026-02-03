@@ -33,6 +33,8 @@ internal interface IInteractionService
         bool required = false) where T : notnull;
 
     Task<bool> ConfirmAsync(string prompt, bool defaultValue = false);
+
+    Task<string> SelectAsync(string prompt, IEnumerable<string> suggestions);
 }
 
 internal sealed class InteractionService(IAnsiConsole ansiConsole) : IInteractionService
@@ -141,6 +143,25 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole) : IInteractio
 
         var confirm = new ConfirmationPrompt(prompt) { DefaultValue = defaultValue };
         return await Task.Run(() => _ansiConsole.Prompt(confirm));
+    }
+
+    public async Task<string> SelectAsync(string prompt, IEnumerable<string> suggestions)
+    {
+        const string SomethingElse = "Something else...";
+        List<string> choices = [.. suggestions, SomethingElse];
+
+        var selected = await SelectAsync<string>(prompt, choices);
+
+        if (selected == SomethingElse)
+        {
+            selected = await PromptAsync<string>(prompt);
+        }
+        else
+        {
+            _ansiConsole.MarkupLineInterpolated($"{prompt} [blue]{selected}[/]");
+        }
+
+        return selected;
     }
 }
 
