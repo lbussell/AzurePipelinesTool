@@ -53,5 +53,6 @@ consoleAppBuilder.Add<RunCommand>();
 consoleAppBuilder.Add<ParametersCommand>();
 consoleAppBuilder.Add<VariablesCommand>();
 consoleAppBuilder.Add<RunsCommand>();
+consoleAppBuilder.Add<StatusCommand>();
 
 await consoleAppBuilder.RunAsync(args);

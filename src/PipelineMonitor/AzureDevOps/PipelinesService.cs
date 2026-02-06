@@ -368,4 +368,26 @@ internal sealed class PipelinesService(
             cancellationToken: ct
         );
     }
+
+    public async Task<BuildTimelineInfo> GetBuildTimelineAsync(
+        OrganizationInfo org,
+        ProjectInfo project,
+        int buildId,
+        CancellationToken ct = default
+    )
+    {
+        var connection = _vssConnectionProvider.GetConnection(org.Uri);
+        var buildsClient = connection.GetClient<BuildHttpClient>();
+
+        var timeline = await buildsClient.GetBuildTimelineAsync(
+            project: project.Name,
+            buildId: buildId,
+            cancellationToken: ct
+        );
+
+        if (timeline?.Records is null || timeline.Records.Count == 0)
+            throw new UserFacingException($"No timeline data found for build {buildId}.");
+
+        return BuildTimelineInfo.Parse(timeline.Records);
+    }
 }
