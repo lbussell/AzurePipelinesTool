@@ -35,10 +35,7 @@ internal sealed class StatusCommand(
 
         var (org, project, buildId) = await _buildIdResolver.ResolveAsync(buildIdOrUrl);
 
-        var timeline = await _interactionService.ShowLoadingAsync(
-            "Fetching timeline...",
-            () => _pipelinesService.GetBuildTimelineAsync(org, project, buildId)
-        );
+        var timeline = await _pipelinesService.GetBuildTimelineAsync(org, project, buildId);
 
         if (stage is null)
             DisplayOverview(timeline, buildId);

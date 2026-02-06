@@ -12,22 +12,6 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
     public bool IsInteractive { get; } =
         !Console.IsInputRedirected && !Console.IsOutputRedirected && ansiConsole.Profile.Capabilities.Interactive;
 
-    public async Task<T> ShowLoadingAsync<T>(string statusText, Func<Task<T>> action)
-    {
-        _ansiConsole.Write(statusText);
-        try
-        {
-            var result = await action();
-            _ansiConsole.WriteLine(" Done.");
-            return result;
-        }
-        catch
-        {
-            _ansiConsole.WriteLine();
-            throw;
-        }
-    }
-
     public void DisplaySubtleMessage(string message, bool escapeMarkup = true)
     {
         var displayMessage = escapeMarkup ? message.EscapeMarkup() : message;

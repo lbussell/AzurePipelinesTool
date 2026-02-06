@@ -22,10 +22,7 @@ internal sealed class ListCommand(
     {
         var pipelinesTask = _pipelinesService.GetLocalPipelinesAsync().ToListAsync().AsTask();
 
-        IReadOnlyList<LocalPipelineInfo> pipelines = await _interactionService.ShowLoadingAsync(
-            "Loading pipelines...",
-            () => pipelinesTask
-        );
+        IReadOnlyList<LocalPipelineInfo> pipelines = await pipelinesTask;
 
         foreach (var pipeline in pipelines)
         {

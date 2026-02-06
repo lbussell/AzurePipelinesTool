@@ -14,10 +14,7 @@ internal sealed class PipelineResolver(PipelinesService pipelinesService, Intera
     {
         var pipelinesTask = _pipelinesService.GetLocalPipelinesAsync().ToListAsync().AsTask();
 
-        List<LocalPipelineInfo> pipelines = await _interactionService.ShowLoadingAsync(
-            "Loading Pipelines...",
-            () => pipelinesTask
-        );
+        List<LocalPipelineInfo> pipelines = await pipelinesTask;
 
         return pipelines;
     }

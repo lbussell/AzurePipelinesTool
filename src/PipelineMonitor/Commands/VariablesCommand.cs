@@ -26,9 +26,7 @@ internal sealed class VariablesCommand(
     public async Task ShowAsync([Argument] string definitionPath)
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
-
-        var variablesTask = _pipelinesService.GetVariablesAsync(pipeline);
-        var variables = await _interactionService.ShowLoadingAsync("Loading variables...", () => variablesTask);
+        var variables = await _pipelinesService.GetVariablesAsync(pipeline);
 
         if (variables.Count == 0)
         {
@@ -55,12 +53,8 @@ internal sealed class VariablesCommand(
     public async Task ExportAsync([Argument] string definitionPath, [Argument] string outputFile)
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
-
-        var variablesTask = _pipelinesService.GetVariablesAsync(pipeline);
-        var variables = await _interactionService.ShowLoadingAsync("Loading variables...", () => variablesTask);
-
+        var variables = await _pipelinesService.GetVariablesAsync(pipeline);
         var json = JsonSerializer.Serialize(variables, JsonOptions);
-
         await File.WriteAllTextAsync(outputFile, json);
         _interactionService.DisplaySuccess($"Exported {variables.Count} variable(s) to {outputFile}");
     }
@@ -90,14 +84,7 @@ internal sealed class VariablesCommand(
             return;
         }
 
-        await _interactionService.ShowLoadingAsync(
-            "Setting variables...",
-            async () =>
-            {
-                await _pipelinesService.SetVariablesAsync(pipeline, variables, clear);
-                return true;
-            }
-        );
+        await _pipelinesService.SetVariablesAsync(pipeline, variables, clear);
 
         var actionDescription = clear ? "replaced with" : "imported";
         _interactionService.DisplaySuccess($"Successfully {actionDescription} {variables.Count} variable(s).");

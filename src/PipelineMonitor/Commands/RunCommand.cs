@@ -51,10 +51,7 @@ internal sealed class RunCommand(
         string finalYaml;
         try
         {
-            finalYaml = await _interactionService.ShowLoadingAsync(
-                "Running preview...",
-                () => _pipelinesService.PreviewPipelineAsync(pipeline, refName, templateParameters)
-            );
+            finalYaml = await _pipelinesService.PreviewPipelineAsync(pipeline, refName, templateParameters);
         }
         catch (Exception ex)
         {
@@ -104,10 +101,7 @@ internal sealed class RunCommand(
         QueuedPipelineRunInfo runInfo;
         try
         {
-            runInfo = await _interactionService.ShowLoadingAsync(
-                "Queuing run...",
-                () => _pipelinesService.RunPipelineAsync(pipeline, refName, templateParameters, variables, skipStage)
-            );
+            runInfo = await _pipelinesService.RunPipelineAsync(pipeline, refName, templateParameters, variables, skipStage);
         }
         catch (Exception ex)
         {

@@ -27,14 +27,7 @@ internal sealed class CancelCommand(
 
         try
         {
-            await _interactionService.ShowLoadingAsync(
-                "Canceling build...",
-                async () =>
-                {
-                    await _pipelinesService.CancelBuildAsync(org, project, buildId);
-                    return true;
-                }
-            );
+            await _pipelinesService.CancelBuildAsync(org, project, buildId);
         }
         catch (Exception ex) when (ex is not UserFacingException)
         {
