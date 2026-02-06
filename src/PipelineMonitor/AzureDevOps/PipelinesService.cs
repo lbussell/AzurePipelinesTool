@@ -206,6 +206,38 @@ internal sealed class PipelinesService(
         return variables;
     }
 
+    public async Task<string> PreviewPipelineAsync(
+        LocalPipelineInfo pipeline,
+        string? refName = null,
+        Dictionary<string, string>? templateParameters = null,
+        CancellationToken ct = default)
+    {
+        var connection = _vssConnectionProvider.GetConnection(pipeline.Organization.Uri);
+        var client = connection.GetClient<PipelinesHttpClient>();
+
+        var runParameters = new RunPipelineParameters { PreviewRun = true };
+
+        if (refName is not null)
+        {
+            runParameters.Resources = new RunResourcesParameters();
+            runParameters.Resources.Repositories["self"] = new RepositoryResourceParameters { RefName = refName };
+        }
+
+        if (templateParameters is not null)
+        {
+            foreach (var (key, value) in templateParameters)
+                runParameters.TemplateParameters[key] = value;
+        }
+
+        var preview = await client.PreviewAsync(
+            runParameters,
+            project: pipeline.Project.Name,
+            pipelineId: pipeline.Id.Value,
+            cancellationToken: ct);
+
+        return preview.FinalYaml;
+    }
+
     public async Task SetVariablesAsync(
         LocalPipelineInfo pipeline,
         IEnumerable<PipelineVariableInfo> variables,
