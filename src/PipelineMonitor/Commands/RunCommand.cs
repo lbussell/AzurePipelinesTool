@@ -73,7 +73,7 @@ internal sealed class RunCommand(
     /// </summary>
     /// <param name="definitionPath">Relative path to the pipeline YAML file.</param>
     /// <param name="parameter">-p, Template parameters as key=value pairs.</param>
-    /// <param name="variable">-v, Pipeline variable overrides as key=value pairs.</param>
+    /// <param name="variable">--var, Pipeline variable overrides as key=value pairs.</param>
     /// <param name="skipStage">-s|--skip, Stage names to skip.</param>
     [Command("run")]
     public async Task RunAsync(
