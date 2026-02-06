@@ -71,8 +71,7 @@ internal sealed class StatusCommand(
         if (isRunning)
         {
             _ansiConsole.WriteLine();
-            var exe = Path.GetFileNameWithoutExtension(_environment.ProcessPath) ?? "pipelinemon";
-            _interactionService.DisplaySubtleMessage($"To cancel: {exe} cancel {buildId}");
+            _interactionService.DisplaySubtleMessage($"To cancel, run: `cancel {buildId}`");
         }
     }
 
