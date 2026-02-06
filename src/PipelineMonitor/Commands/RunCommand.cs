@@ -29,7 +29,7 @@ internal sealed class RunCommand(
     /// Preview-expand a pipeline's YAML by calling the Azure DevOps Preview API.
     /// </summary>
     /// <param name="definitionPath">Relative path to the pipeline YAML file.</param>
-    /// <param name="parameter">Template parameters as key=value pairs.</param>
+    /// <param name="parameter">-p, Template parameters as key=value pairs.</param>
     [Command("check")]
     public async Task ExecuteAsync([Argument] string definitionPath, string[]? parameter = null)
     {
@@ -73,9 +73,9 @@ internal sealed class RunCommand(
     /// Queue a pipeline run on Azure DevOps.
     /// </summary>
     /// <param name="definitionPath">Relative path to the pipeline YAML file.</param>
-    /// <param name="parameter">Template parameters as key=value pairs.</param>
-    /// <param name="variable">Pipeline variable overrides as key=value pairs.</param>
-    /// <param name="skipStage">Stage names to skip.</param>
+    /// <param name="parameter">-p, Template parameters as key=value pairs.</param>
+    /// <param name="variable">-v, Pipeline variable overrides as key=value pairs.</param>
+    /// <param name="skipStage">-s|--skip, Stage names to skip.</param>
     [Command("run")]
     public async Task RunAsync(
         [Argument] string definitionPath,
