@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Work.WebApi;
@@ -255,43 +255,74 @@ internal sealed class PipelinesService(
         string? refName = null,
         Dictionary<string, string>? templateParameters = null,
         Dictionary<string, string>? variables = null,
+        IReadOnlyCollection<string>? stagesToSkip = null,
         CancellationToken ct = default
     )
     {
         var connection = _vssConnectionProvider.GetConnection(pipeline.Organization.Uri);
-        var buildsClient = connection.GetClient<BuildHttpClient>();
+        var client = connection.GetClient<PipelinesHttpClient>();
 
-        var build = new Build
+        var runParameters = new RunPipelineParameters();
+
+        if (refName is not null)
         {
-            Definition = new DefinitionReference { Id = pipeline.Id.Value },
-            SourceBranch = refName,
-        };
+            runParameters.Resources = new RunResourcesParameters();
+            runParameters.Resources.Repositories["self"] = new RepositoryResourceParameters { RefName = refName };
+        }
 
         if (templateParameters is not null)
-            build.TemplateParameters = new Dictionary<string, string>(
-                templateParameters,
-                StringComparer.OrdinalIgnoreCase
-            );
+        {
+            foreach (var (key, value) in templateParameters)
+                runParameters.TemplateParameters[key] = value;
+        }
 
         if (variables is not null)
-            build.Parameters = JsonSerializer.Serialize(variables);
+        {
+            foreach (var (key, value) in variables)
+                runParameters.Variables[key] = CreateVariable(value);
+        }
 
-        var queuedBuild = await buildsClient.QueueBuildAsync(
-            build,
+        if (stagesToSkip is not null)
+        {
+            foreach (var stage in stagesToSkip)
+                runParameters.StagesToSkip.Add(stage);
+        }
+
+        var run = await client.RunPipelineAsync(
+            runParameters,
             project: pipeline.Project.Name,
+            pipelineId: pipeline.Id.Value,
             cancellationToken: ct
         );
 
-        var webUrl = GetBuildWebUrl(queuedBuild, pipeline);
+        var webUrl = GetRunWebUrl(run.Id, pipeline);
 
-        return new QueuedPipelineRunInfo(Id: new RunId(queuedBuild.Id), Name: queuedBuild.BuildNumber, WebUrl: webUrl);
+        return new QueuedPipelineRunInfo(Id: new RunId(run.Id), Name: run.Name, WebUrl: webUrl);
     }
 
-    private static string GetBuildWebUrl(Build build, LocalPipelineInfo pipeline)
+    private static string GetRunWebUrl(int runId, LocalPipelineInfo pipeline)
     {
         var org = pipeline.Organization.Name;
         var project = pipeline.Project.Name;
-        return $"https://dev.azure.com/{Uri.EscapeDataString(org)}/{Uri.EscapeDataString(project)}/_build/results?buildId={build.Id}";
+        return $"https://dev.azure.com/{Uri.EscapeDataString(org)}/{Uri.EscapeDataString(project)}/_build/results?buildId={runId}";
+    }
+
+    /// <summary>
+    /// Creates a <see cref="Variable"/> instance via reflection because the constructor is not public.
+    /// </summary>
+    private static Variable CreateVariable(string value)
+    {
+        var ctor =
+            typeof(Variable).GetConstructor(
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public,
+                binder: null,
+                types: Type.EmptyTypes,
+                modifiers: null
+            ) ?? throw new InvalidOperationException("Could not find a parameterless constructor on Variable.");
+
+        var variable = (Variable)ctor.Invoke(null);
+        variable.Value = value;
+        return variable;
     }
 
     public async Task SetVariablesAsync(

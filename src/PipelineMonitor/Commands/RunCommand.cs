@@ -75,8 +75,14 @@ internal sealed class RunCommand(
     /// <param name="definitionPath">Relative path to the pipeline YAML file.</param>
     /// <param name="parameter">Template parameters as key=value pairs.</param>
     /// <param name="variable">Pipeline variable overrides as key=value pairs.</param>
+    /// <param name="skipStage">Stage names to skip.</param>
     [Command("run")]
-    public async Task RunAsync([Argument] string definitionPath, string[]? parameter = null, string[]? variable = null)
+    public async Task RunAsync(
+        [Argument] string definitionPath,
+        string[]? parameter = null,
+        string[]? variable = null,
+        string[]? skipStage = null
+    )
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
@@ -98,7 +104,7 @@ internal sealed class RunCommand(
         {
             runInfo = await _interactionService.ShowLoadingAsync(
                 "Queuing run...",
-                () => _pipelinesService.RunPipelineAsync(pipeline, refName, templateParameters, variables)
+                () => _pipelinesService.RunPipelineAsync(pipeline, refName, templateParameters, variables, skipStage)
             );
         }
         catch (Exception ex)
