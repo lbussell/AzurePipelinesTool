@@ -12,7 +12,8 @@ namespace PipelineMonitor.AzureDevOps;
 internal sealed class RepoInfoResolver(
     GitService gitService,
     VstsGitUrlParser vstsGitUrlParser,
-    ILogger<RepoInfoResolver> logger)
+    ILogger<RepoInfoResolver> logger
+)
 {
     private readonly GitService _gitService = gitService;
     private readonly VstsGitUrlParser _vstsGitUrlParser = vstsGitUrlParser;
@@ -23,7 +24,8 @@ internal sealed class RepoInfoResolver(
         string? project = null,
         string? repository = null,
         bool detectFromGit = true,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         OrganizationInfo? orgInfo = null;
         ProjectInfo? projInfo = null;
@@ -113,5 +115,3 @@ internal sealed class RepoInfoResolver(
         return new OrganizationInfo(organization, new Uri($"https://dev.azure.com/{organization}"));
     }
 }
-
-

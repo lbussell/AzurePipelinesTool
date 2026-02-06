@@ -12,7 +12,8 @@ internal sealed class ParametersCommand(
     IAnsiConsole ansiConsole,
     InteractionService interactionService,
     PipelineResolver pipelineResolver,
-    PipelineYamlService pipelineYamlService)
+    PipelineYamlService pipelineYamlService
+)
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly InteractionService _interactionService = interactionService;
@@ -24,7 +25,8 @@ internal sealed class ParametersCommand(
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
-        var pipelineYaml = await _pipelineYamlService.ParseAsync(pipeline.DefinitionFile.FullName)
+        var pipelineYaml =
+            await _pipelineYamlService.ParseAsync(pipeline.DefinitionFile.FullName)
             ?? throw new UserFacingException("Failed to parse pipeline YAML file.");
 
         if (pipelineYaml.Parameters.Count == 0)
@@ -42,8 +44,10 @@ internal sealed class ParametersCommand(
                 _ansiConsole.WriteLine($"  {param.DisplayName.Trim()}");
 
             var defaultText = "";
-            if (param.ParameterType is PipelineParameterType.StringList
-                && param.Default is IEnumerable<object> defaults)
+            if (
+                param.ParameterType is PipelineParameterType.StringList
+                && param.Default is IEnumerable<object> defaults
+            )
             {
                 defaultText = string.Join(", ", defaults.Select(d => d.ToString() ?? "unknown"));
             }

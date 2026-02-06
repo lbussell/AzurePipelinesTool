@@ -7,9 +7,7 @@ using Spectre.Console;
 
 namespace PipelineMonitor.Commands;
 
-internal sealed class InfoCommand(
-    IAnsiConsole ansiConsole,
-    PipelineResolver pipelineResolver)
+internal sealed class InfoCommand(IAnsiConsole ansiConsole, PipelineResolver pipelineResolver)
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly PipelineResolver _pipelineResolver = pipelineResolver;

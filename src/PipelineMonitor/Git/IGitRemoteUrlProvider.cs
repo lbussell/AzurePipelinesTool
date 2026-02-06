@@ -21,5 +21,6 @@ internal interface IGitRemoteUrlProvider
     /// <param name="validationFunction">Optional function to filter candidate URLs.</param>
     Task<string?> GetRemoteUrlAsync(
         Func<string, bool>? validationFunction = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

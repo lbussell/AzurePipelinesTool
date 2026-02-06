@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 using Microsoft.Extensions.Logging.Abstractions;
-
 using PipelineMonitor.AzureDevOps.Yaml;
 
 namespace PipelineMonitor.Tests.AzureDevOps.Yaml;
@@ -121,9 +120,7 @@ public class PipelineYamlServiceTests
         Assert.IsNotNull(result.Parameters);
         Assert.HasCount(1, result.Parameters);
         Assert.IsNotNull(result.Parameters[0].Values);
-        CollectionAssert.AreEqual(
-            new[] { "dev", "staging", "prod" },
-            result.Parameters[0].Values);
+        CollectionAssert.AreEqual(new[] { "dev", "staging", "prod" }, result.Parameters[0].Values);
     }
 
     [TestMethod]
@@ -228,12 +225,15 @@ public class PipelineYamlServiceTests
         var tempFile = Path.GetTempFileName();
         try
         {
-            await File.WriteAllTextAsync(tempFile, """
+            await File.WriteAllTextAsync(
+                tempFile,
+                """
                 parameters:
                 - name: test
                   type: string
                   default: 'hello'
-                """);
+                """
+            );
 
             var result = await _service.ParseAsync(tempFile);
 

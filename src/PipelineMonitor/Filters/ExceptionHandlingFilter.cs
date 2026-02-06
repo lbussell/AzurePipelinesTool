@@ -9,7 +9,8 @@ namespace PipelineMonitor.Filters;
 internal sealed class ExceptionHandlingFilter(
     InteractionService interactionService,
     ILogger<ExceptionHandlingFilter> logger,
-    ConsoleAppFilter next) : ConsoleAppFilter(next)
+    ConsoleAppFilter next
+) : ConsoleAppFilter(next)
 {
     public override async Task InvokeAsync(ConsoleAppContext context, CancellationToken cancellationToken)
     {

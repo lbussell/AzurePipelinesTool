@@ -22,7 +22,8 @@ internal sealed record LocalPipelineInfo(
     string RelativePath,
     OrganizationInfo Organization,
     ProjectInfo Project,
-    RepositoryInfo Repository);
+    RepositoryInfo Repository
+);
 
 internal readonly record struct RunId(int Value);
 
@@ -35,7 +36,8 @@ internal sealed record PipelineRunInfo(
     DateTimeOffset? Finished,
     CommitInfo? Commit,
     string Url,
-    IEnumerable<StageInfo> Stages);
+    IEnumerable<StageInfo> Stages
+);
 
 internal enum PipelineRunResult
 {

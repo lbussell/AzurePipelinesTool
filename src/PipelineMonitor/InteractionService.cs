@@ -9,9 +9,8 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
 
-    public bool IsInteractive { get; } = !Console.IsInputRedirected
-        && !Console.IsOutputRedirected
-        && ansiConsole.Profile.Capabilities.Interactive;
+    public bool IsInteractive { get; } =
+        !Console.IsInputRedirected && !Console.IsOutputRedirected && ansiConsole.Profile.Capabilities.Interactive;
 
     public async Task<T> ShowLoadingAsync<T>(string statusText, Func<Task<T>> action)
     {
@@ -50,16 +49,19 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
         _ansiConsole.MarkupLine($"[{color}][[{messageType}]][/] {displayMessage}");
     }
 
-    public async Task<T> PromptAsync<T>(string prompt, T? defaultValue = default) where T : notnull
+    public async Task<T> PromptAsync<T>(string prompt, T? defaultValue = default)
+        where T : notnull
     {
         if (!IsInteractive)
         {
-            if (defaultValue is not null) return defaultValue;
+            if (defaultValue is not null)
+                return defaultValue;
             throw new InvalidOperationException($"Cannot prompt in non-interactive environment: {prompt}");
         }
 
         var textPrompt = new TextPrompt<T>(prompt);
-        if (defaultValue is not null) textPrompt.DefaultValue(defaultValue);
+        if (defaultValue is not null)
+            textPrompt.DefaultValue(defaultValue);
 
         return await Task.Run(() => _ansiConsole.Prompt(textPrompt));
     }
@@ -69,13 +71,16 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
         IEnumerable<T> choices,
         Func<T, string>? displaySelector = null,
         T? defaultValue = default
-    ) where T : notnull
+    )
+        where T : notnull
     {
         var choicesList = choices.ToList();
         if (!IsInteractive)
         {
-            if (defaultValue is not null) return defaultValue;
-            if (choicesList.Count == 1) return choicesList[0];
+            if (defaultValue is not null)
+                return defaultValue;
+            if (choicesList.Count == 1)
+                return choicesList[0];
             throw new InvalidOperationException($"Cannot prompt in non-interactive environment: {prompt}");
         }
 
@@ -84,7 +89,8 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
             choicesList.Insert(0, defaultValue);
 
         var selection = new SelectionPrompt<T>().Title(prompt).AddChoices(choicesList);
-        if (displaySelector is not null) selection.UseConverter(displaySelector);
+        if (displaySelector is not null)
+            selection.UseConverter(displaySelector);
 
         return await Task.Run(() => _ansiConsole.Prompt(selection));
     }
@@ -95,17 +101,21 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
         Func<T, string>? displaySelector = null,
         IEnumerable<T>? defaults = null,
         bool required = false
-    ) where T : notnull
+    )
+        where T : notnull
     {
         if (!IsInteractive)
             throw new InvalidOperationException($"Cannot prompt in non-interactive environment: {prompt}");
 
         var multi = new MultiSelectionPrompt<T>().Title(prompt).AddChoices(choices);
-        if (required) multi.Required();
-        if (displaySelector is not null) multi.UseConverter(displaySelector);
+        if (required)
+            multi.Required();
+        if (displaySelector is not null)
+            multi.UseConverter(displaySelector);
         if (defaults is not null)
         {
-            foreach (var item in defaults) multi.Select(item);
+            foreach (var item in defaults)
+                multi.Select(item);
         }
 
         return await Task.Run(() => _ansiConsole.Prompt(multi));
@@ -113,7 +123,8 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
 
     public async Task<bool> ConfirmAsync(string prompt, bool defaultValue = false)
     {
-        if (!IsInteractive) return defaultValue;
+        if (!IsInteractive)
+            return defaultValue;
 
         var confirm = new ConfirmationPrompt(prompt) { DefaultValue = defaultValue };
         return await Task.Run(() => _ansiConsole.Prompt(confirm));
@@ -138,4 +149,3 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
         return selected;
     }
 }
-

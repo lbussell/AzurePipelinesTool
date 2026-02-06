@@ -15,7 +15,8 @@ namespace PipelineMonitor.AzureDevOps;
 internal sealed class PipelinesService(
     VssConnectionProvider vssConnectionProvider,
     RepoInfoResolver repoInfoResolver,
-    GitService gitService)
+    GitService gitService
+)
 {
     private readonly VssConnectionProvider _vssConnectionProvider = vssConnectionProvider;
     private readonly RepoInfoResolver _repoInfoResolver = repoInfoResolver;
@@ -31,12 +32,11 @@ internal sealed class PipelinesService(
     }
 
     public async IAsyncEnumerable<LocalPipelineInfo> GetLocalPipelinesAsync(
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken ct = default
+    )
     {
         var repoInfo = await _repoInfoResolver.ResolveAsync(cancellationToken: ct);
-        if (repoInfo.Organization is null
-            || repoInfo.Project is null
-            || repoInfo.Repository is null)
+        if (repoInfo.Organization is null || repoInfo.Project is null || repoInfo.Repository is null)
         {
             yield break;
         }
@@ -48,7 +48,8 @@ internal sealed class PipelinesService(
             repositoryId: repoInfo.Repository.Id.ToString(),
             project: repoInfo.Project.Name,
             repositoryType: "TfsGit",
-            cancellationToken: ct);
+            cancellationToken: ct
+        );
 
         var repoRoot = await _gitService.GetRepoRootAsync(ct);
 
@@ -70,7 +71,8 @@ internal sealed class PipelinesService(
                 RelativePath: relativePath,
                 Organization: repoInfo.Organization,
                 Project: repoInfo.Project,
-                Repository: repoInfo.Repository);
+                Repository: repoInfo.Repository
+            );
         }
     }
 
@@ -90,14 +92,14 @@ internal sealed class PipelinesService(
                     Name: pipeline.Name,
                     Id: new PipelineId(pipeline.Id),
                     Url: pipeline.Url,
-                    Folder: pipeline.Folder);
+                    Folder: pipeline.Folder
+                );
             }
 
             if (response is IPagedList pagedListResponse)
             {
                 continuationToken = pagedListResponse.ContinuationToken;
             }
-
         } while (!string.IsNullOrEmpty(continuationToken));
     }
 
@@ -106,8 +108,8 @@ internal sealed class PipelinesService(
         ProjectInfo project,
         PipelineId pipelineId,
         int top = 10,
-        [EnumeratorCancellation]
-        CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken ct = default
+    )
     {
         var connection = _vssConnectionProvider.GetConnection(org.Uri);
         var client = connection.GetClient<PipelinesHttpClient>();
@@ -117,7 +119,8 @@ internal sealed class PipelinesService(
             project: project.Name,
             definitions: [pipelineId.Value],
             top: top,
-            cancellationToken: ct);
+            cancellationToken: ct
+        );
 
         foreach (var build in builds)
         {
@@ -131,7 +134,8 @@ internal sealed class PipelinesService(
                     Sha: change.Id,
                     Message: change.Message,
                     Author: change.Author.DisplayName,
-                    Date: change.Timestamp)
+                    Date: change.Timestamp
+                )
                 : null;
 
             var result = build.Result switch
@@ -145,18 +149,18 @@ internal sealed class PipelinesService(
 
             var timeline = await timelineTask;
             var stages = timeline.Records.Where(r => r.RecordType == "Stage").ToList();
-            var stageInfos = stages.Select(stage =>
-                new StageInfo(
-                    Name: stage.Name,
-                    State: stage.State?.ToString() ?? "Unknown",
-                    Result: stage.Result switch
-                    {
-                        TaskResult.Succeeded => PipelineRunResult.Succeeded,
-                        TaskResult.SucceededWithIssues => PipelineRunResult.PartiallySucceeded,
-                        TaskResult.Failed => PipelineRunResult.Failed,
-                        TaskResult.Canceled => PipelineRunResult.Canceled,
-                        _ => PipelineRunResult.None,
-                    }));
+            var stageInfos = stages.Select(stage => new StageInfo(
+                Name: stage.Name,
+                State: stage.State?.ToString() ?? "Unknown",
+                Result: stage.Result switch
+                {
+                    TaskResult.Succeeded => PipelineRunResult.Succeeded,
+                    TaskResult.SucceededWithIssues => PipelineRunResult.PartiallySucceeded,
+                    TaskResult.Failed => PipelineRunResult.Failed,
+                    TaskResult.Canceled => PipelineRunResult.Canceled,
+                    _ => PipelineRunResult.None,
+                }
+            ));
 
             yield return new PipelineRunInfo(
                 Name: build.BuildNumber,
@@ -167,23 +171,26 @@ internal sealed class PipelinesService(
                 Finished: build.FinishTime,
                 Commit: commit,
                 Url: build.Url,
-                Stages: stageInfos);
+                Stages: stageInfos
+            );
         }
     }
 
     public async IAsyncEnumerable<PipelineRunInfo> GetRunsAsync(
         LocalPipelineInfo pipeline,
         int top = 10,
-        [EnumeratorCancellation]
-        CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken ct = default
+    )
     {
         var runs = GetRunsAsync(pipeline.Organization, pipeline.Project, pipeline.Id, top, ct);
-        await foreach (var run in runs.WithCancellation(ct)) yield return run;
+        await foreach (var run in runs.WithCancellation(ct))
+            yield return run;
     }
 
     public async Task<IReadOnlyList<PipelineVariableInfo>> GetVariablesAsync(
         LocalPipelineInfo pipeline,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
         var connection = _vssConnectionProvider.GetConnection(pipeline.Organization.Uri);
         var buildsClient = connection.GetClient<BuildHttpClient>();
@@ -191,17 +198,19 @@ internal sealed class PipelinesService(
         var buildDefinition = await buildsClient.GetDefinitionAsync(
             project: pipeline.Project.Name,
             definitionId: pipeline.Id.Value,
-            cancellationToken: ct);
+            cancellationToken: ct
+        );
 
         if (buildDefinition.Variables is null)
             return [];
 
-        var variables = buildDefinition.Variables
-            .Select(kvp => new PipelineVariableInfo(
+        var variables = buildDefinition
+            .Variables.Select(kvp => new PipelineVariableInfo(
                 Name: kvp.Key,
                 Value: kvp.Value.Value ?? string.Empty,
                 IsSecret: kvp.Value.IsSecret == true,
-                AllowOverride: kvp.Value.AllowOverride == true))
+                AllowOverride: kvp.Value.AllowOverride == true
+            ))
             .ToList();
 
         return variables;
@@ -211,7 +220,8 @@ internal sealed class PipelinesService(
         LocalPipelineInfo pipeline,
         string? refName = null,
         Dictionary<string, string>? templateParameters = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
         var connection = _vssConnectionProvider.GetConnection(pipeline.Organization.Uri);
         var client = connection.GetClient<PipelinesHttpClient>();
@@ -234,7 +244,8 @@ internal sealed class PipelinesService(
             runParameters,
             project: pipeline.Project.Name,
             pipelineId: pipeline.Id.Value,
-            cancellationToken: ct);
+            cancellationToken: ct
+        );
 
         return preview.FinalYaml;
     }
@@ -244,7 +255,8 @@ internal sealed class PipelinesService(
         string? refName = null,
         Dictionary<string, string>? templateParameters = null,
         Dictionary<string, string>? variables = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
         var connection = _vssConnectionProvider.GetConnection(pipeline.Organization.Uri);
         var buildsClient = connection.GetClient<BuildHttpClient>();
@@ -256,7 +268,10 @@ internal sealed class PipelinesService(
         };
 
         if (templateParameters is not null)
-            build.TemplateParameters = new Dictionary<string, string>(templateParameters, StringComparer.OrdinalIgnoreCase);
+            build.TemplateParameters = new Dictionary<string, string>(
+                templateParameters,
+                StringComparer.OrdinalIgnoreCase
+            );
 
         if (variables is not null)
             build.Parameters = JsonSerializer.Serialize(variables);
@@ -264,14 +279,12 @@ internal sealed class PipelinesService(
         var queuedBuild = await buildsClient.QueueBuildAsync(
             build,
             project: pipeline.Project.Name,
-            cancellationToken: ct);
+            cancellationToken: ct
+        );
 
         var webUrl = GetBuildWebUrl(queuedBuild, pipeline);
 
-        return new QueuedPipelineRunInfo(
-            Id: new RunId(queuedBuild.Id),
-            Name: queuedBuild.BuildNumber,
-            WebUrl: webUrl);
+        return new QueuedPipelineRunInfo(Id: new RunId(queuedBuild.Id), Name: queuedBuild.BuildNumber, WebUrl: webUrl);
     }
 
     private static string GetBuildWebUrl(Build build, LocalPipelineInfo pipeline)
@@ -285,7 +298,8 @@ internal sealed class PipelinesService(
         LocalPipelineInfo pipeline,
         IEnumerable<PipelineVariableInfo> variables,
         bool clearExisting = false,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
         var connection = _vssConnectionProvider.GetConnection(pipeline.Organization.Uri);
         var buildsClient = connection.GetClient<BuildHttpClient>();
@@ -293,7 +307,8 @@ internal sealed class PipelinesService(
         var buildDefinition = await buildsClient.GetDefinitionAsync(
             project: pipeline.Project.Name,
             definitionId: pipeline.Id.Value,
-            cancellationToken: ct);
+            cancellationToken: ct
+        );
 
         if (clearExisting)
         {
@@ -311,7 +326,7 @@ internal sealed class PipelinesService(
             {
                 Value = variable.Value,
                 IsSecret = variable.IsSecret,
-                AllowOverride = variable.AllowOverride
+                AllowOverride = variable.AllowOverride,
             };
         }
 
@@ -319,6 +334,7 @@ internal sealed class PipelinesService(
             definition: buildDefinition,
             project: pipeline.Project.Name,
             definitionId: pipeline.Id.Value,
-            cancellationToken: ct);
+            cancellationToken: ct
+        );
     }
 }

@@ -55,5 +55,3 @@ internal sealed class PipelineYamlService(ILogger<PipelineYamlService> logger)
         }
     }
 }
-
-

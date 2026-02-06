@@ -10,16 +10,15 @@ namespace PipelineMonitor.Commands;
 internal sealed class RunsCommand(
     IAnsiConsole ansiConsole,
     PipelineResolver pipelineResolver,
-    PipelinesService pipelinesService)
+    PipelinesService pipelinesService
+)
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly PipelineResolver _pipelineResolver = pipelineResolver;
     private readonly PipelinesService _pipelinesService = pipelinesService;
 
     [Command("runs")]
-    public async Task ExecuteAsync(
-        [Argument] string definitionPath,
-        int top = 10)
+    public async Task ExecuteAsync([Argument] string definitionPath, int top = 10)
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
         var pipelineRuns = _pipelinesService.GetRunsAsync(pipeline, top);

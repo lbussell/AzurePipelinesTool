@@ -17,22 +17,16 @@ internal sealed class CliWrapProcessRunner : IProcessRunner
         string executable,
         string arguments,
         bool allowNonZeroExitCode = false,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var validation = allowNonZeroExitCode 
-            ? CommandResultValidation.None
-            : CommandResultValidation.ZeroExitCode;
+        var validation = allowNonZeroExitCode ? CommandResultValidation.None : CommandResultValidation.ZeroExitCode;
 
         var result = await Cli.Wrap(executable)
             .WithArguments(arguments)
             .WithValidation(validation)
             .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cancellationToken);
 
-        return new ProcessResult(
-            result.ExitCode,
-            result.StandardOutput,
-            result.StandardError);
+        return new ProcessResult(result.ExitCode, result.StandardOutput, result.StandardError);
     }
 }
-
-

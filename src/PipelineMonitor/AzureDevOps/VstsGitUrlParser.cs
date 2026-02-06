@@ -13,7 +13,8 @@ namespace PipelineMonitor.AzureDevOps;
 /// </summary>
 internal sealed partial class VstsGitUrlParser(
     VssConnectionProvider connectionProvider,
-    ILogger<VstsGitUrlParser> logger)
+    ILogger<VstsGitUrlParser> logger
+)
 {
     private readonly VssConnectionProvider _connectionProvider = connectionProvider;
     private readonly ILogger<VstsGitUrlParser> _logger = logger;
@@ -38,9 +39,11 @@ internal sealed partial class VstsGitUrlParser(
         }
 
         // Check for Azure DevOps path patterns or SSH scheme
-        if (uri.AbsolutePath.Contains("/_git/", StringComparison.OrdinalIgnoreCase) ||
-            uri.AbsolutePath.Contains("/_ssh/", StringComparison.OrdinalIgnoreCase) ||
-            uri.Scheme.Equals("ssh", StringComparison.OrdinalIgnoreCase))
+        if (
+            uri.AbsolutePath.Contains("/_git/", StringComparison.OrdinalIgnoreCase)
+            || uri.AbsolutePath.Contains("/_ssh/", StringComparison.OrdinalIgnoreCase)
+            || uri.Scheme.Equals("ssh", StringComparison.OrdinalIgnoreCase)
+        )
         {
             return true;
         }
@@ -81,7 +84,8 @@ internal sealed partial class VstsGitUrlParser(
             var repository = await gitClient.GetRepositoryAsync(
                 project: projectName,
                 repositoryId: repoName,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken
+            );
 
             if (repository is null)
             {
@@ -119,8 +123,7 @@ internal sealed partial class VstsGitUrlParser(
         if (uri.Host.Equals("dev.azure.com", StringComparison.OrdinalIgnoreCase))
         {
             // Path: org/project/_git/repo
-            if (pathParts.Length >= 4 &&
-                pathParts[2].Equals("_git", StringComparison.OrdinalIgnoreCase))
+            if (pathParts.Length >= 4 && pathParts[2].Equals("_git", StringComparison.OrdinalIgnoreCase))
             {
                 var orgName = pathParts[0];
                 var projectName = pathParts[1];
@@ -138,15 +141,16 @@ internal sealed partial class VstsGitUrlParser(
             var orgUri = new Uri($"https://{uri.Host}");
 
             // Find _git index
-            var gitIndex = Array.FindIndex(pathParts, p =>
-                p.Equals("_git", StringComparison.OrdinalIgnoreCase));
+            var gitIndex = Array.FindIndex(pathParts, p => p.Equals("_git", StringComparison.OrdinalIgnoreCase));
 
             if (gitIndex >= 1 && gitIndex < pathParts.Length - 1)
             {
                 // Project is the segment before _git (skip DefaultCollection if present)
                 var projectIndex = gitIndex - 1;
-                if (pathParts[projectIndex].Equals("DefaultCollection", StringComparison.OrdinalIgnoreCase) &&
-                    projectIndex > 0)
+                if (
+                    pathParts[projectIndex].Equals("DefaultCollection", StringComparison.OrdinalIgnoreCase)
+                    && projectIndex > 0
+                )
                 {
                     projectIndex--;
                 }
@@ -270,8 +274,10 @@ internal sealed partial class VstsGitUrlParser(
         // For git@ssh.dev.azure.com -> return dev.azure.com
         // For org@vs-ssh.visualstudio.com -> return org.visualstudio.com
 
-        if (userInfo.Equals("git", StringComparison.OrdinalIgnoreCase) &&
-            host.Equals("ssh.dev.azure.com", StringComparison.OrdinalIgnoreCase))
+        if (
+            userInfo.Equals("git", StringComparison.OrdinalIgnoreCase)
+            && host.Equals("ssh.dev.azure.com", StringComparison.OrdinalIgnoreCase)
+        )
         {
             return "dev.azure.com";
         }
@@ -296,9 +302,13 @@ internal sealed partial class VstsGitUrlParser(
         // Handle new SSH URLs that don't start with ssh:// but contain SSH hosts
         // e.g., git@ssh.dev.azure.com:v3/org/project/repo
         // e.g., org@vs-ssh.visualstudio.com:v3/org/project/repo
-        if (!url.StartsWith("ssh:", StringComparison.OrdinalIgnoreCase) &&
-            (url.Contains("vs-ssh.visualstudio.com", StringComparison.OrdinalIgnoreCase) ||
-             url.Contains("ssh.dev.azure.com", StringComparison.OrdinalIgnoreCase)))
+        if (
+            !url.StartsWith("ssh:", StringComparison.OrdinalIgnoreCase)
+            && (
+                url.Contains("vs-ssh.visualstudio.com", StringComparison.OrdinalIgnoreCase)
+                || url.Contains("ssh.dev.azure.com", StringComparison.OrdinalIgnoreCase)
+            )
+        )
         {
             // Convert user@host:path format to ssh://user@host/path
             var colonIndex = url.IndexOf(':');
@@ -320,5 +330,3 @@ internal sealed partial class VstsGitUrlParser(
     [GeneratedRegex(@"([^@]+)@[^\.]+(\.[^:]+)", RegexOptions.IgnoreCase)]
     private static partial Regex SshNetlocRegex();
 }
-
-

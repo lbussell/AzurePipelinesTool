@@ -9,7 +9,9 @@ namespace PipelineMonitor;
 /// </summary>
 internal sealed class UserFacingException : Exception
 {
-    public UserFacingException(string message) : base(message) { }
+    public UserFacingException(string message)
+        : base(message) { }
 
-    public UserFacingException(string message, Exception innerException) : base(message, innerException) { }
+    public UserFacingException(string message, Exception innerException)
+        : base(message, innerException) { }
 }

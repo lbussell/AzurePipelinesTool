@@ -22,7 +22,7 @@ internal enum PipelineParameterType
     Deployment,
     DeploymentList,
     Stage,
-    StageList
+    StageList,
 }
 
 /// <summary>
@@ -48,23 +48,24 @@ internal sealed record PipelineParameter
     /// <summary>
     /// Gets the strongly-typed parameter type.
     /// </summary>
-    public PipelineParameterType ParameterType => Type?.ToLowerInvariant() switch
-    {
-        "string" => PipelineParameterType.String,
-        "stringlist" => PipelineParameterType.StringList,
-        "number" => PipelineParameterType.Number,
-        "boolean" or "bool" => PipelineParameterType.Boolean,
-        "object" => PipelineParameterType.Object,
-        "step" => PipelineParameterType.Step,
-        "steplist" => PipelineParameterType.StepList,
-        "job" => PipelineParameterType.Job,
-        "joblist" => PipelineParameterType.JobList,
-        "deployment" => PipelineParameterType.Deployment,
-        "deploymentlist" => PipelineParameterType.DeploymentList,
-        "stage" => PipelineParameterType.Stage,
-        "stagelist" => PipelineParameterType.StageList,
-        _ => PipelineParameterType.String
-    };
+    public PipelineParameterType ParameterType =>
+        Type?.ToLowerInvariant() switch
+        {
+            "string" => PipelineParameterType.String,
+            "stringlist" => PipelineParameterType.StringList,
+            "number" => PipelineParameterType.Number,
+            "boolean" or "bool" => PipelineParameterType.Boolean,
+            "object" => PipelineParameterType.Object,
+            "step" => PipelineParameterType.Step,
+            "steplist" => PipelineParameterType.StepList,
+            "job" => PipelineParameterType.Job,
+            "joblist" => PipelineParameterType.JobList,
+            "deployment" => PipelineParameterType.Deployment,
+            "deploymentlist" => PipelineParameterType.DeploymentList,
+            "stage" => PipelineParameterType.Stage,
+            "stagelist" => PipelineParameterType.StageList,
+            _ => PipelineParameterType.String,
+        };
 }
 
 /// <summary>

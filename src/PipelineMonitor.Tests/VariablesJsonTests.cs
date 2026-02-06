@@ -15,7 +15,7 @@ public sealed class VariablesJsonTests
         {
             new("TestVar1", "Value1", false, true),
             new("TestVar2", "Value2", true, false),
-            new("TestVar3", "", false, false)
+            new("TestVar3", "", false, false),
         };
 
         var json = JsonSerializer.Serialize(variables, new JsonSerializerOptions { WriteIndented = true });
@@ -31,21 +31,21 @@ public sealed class VariablesJsonTests
     public void VariableInfo_DeserializesFromJson()
     {
         var json = """
-        [
-          {
-            "Name": "TestVar1",
-            "Value": "Value1",
-            "IsSecret": false,
-            "AllowOverride": true
-          },
-          {
-            "Name": "TestVar2",
-            "Value": "Value2",
-            "IsSecret": true,
-            "AllowOverride": false
-          }
-        ]
-        """;
+            [
+              {
+                "Name": "TestVar1",
+                "Value": "Value1",
+                "IsSecret": false,
+                "AllowOverride": true
+              },
+              {
+                "Name": "TestVar2",
+                "Value": "Value2",
+                "IsSecret": true,
+                "AllowOverride": false
+              }
+            ]
+            """;
 
         var variables = JsonSerializer.Deserialize<List<PipelineVariableInfo>>(json);
 
@@ -68,7 +68,7 @@ public sealed class VariablesJsonTests
         {
             new("TestVar1", "Value1", false, true),
             new("TestVar2", "Value2", true, false),
-            new("TestVar3", "Value3", false, false)
+            new("TestVar3", "Value3", false, false),
         };
 
         var json = JsonSerializer.Serialize(originalVariables);

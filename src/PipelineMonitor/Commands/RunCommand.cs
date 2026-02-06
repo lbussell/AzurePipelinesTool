@@ -15,7 +15,8 @@ internal sealed class RunCommand(
     PipelineResolver pipelineResolver,
     PipelineYamlService pipelineYamlService,
     PipelinesService pipelinesService,
-    GitService gitService)
+    GitService gitService
+)
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly InteractionService _interactionService = interactionService;
@@ -30,9 +31,7 @@ internal sealed class RunCommand(
     /// <param name="definitionPath">Relative path to the pipeline YAML file.</param>
     /// <param name="parameter">Template parameters as key=value pairs.</param>
     [Command("check")]
-    public async Task ExecuteAsync(
-        [Argument] string definitionPath,
-        string[]? parameter = null)
+    public async Task ExecuteAsync([Argument] string definitionPath, string[]? parameter = null)
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
@@ -52,14 +51,18 @@ internal sealed class RunCommand(
         {
             finalYaml = await _interactionService.ShowLoadingAsync(
                 "Running preview...",
-                () => _pipelinesService.PreviewPipelineAsync(pipeline, refName, templateParameters));
+                () => _pipelinesService.PreviewPipelineAsync(pipeline, refName, templateParameters)
+            );
         }
         catch (Exception ex)
         {
             throw new UserFacingException($"Pipeline preview failed: {ex.Message}", ex);
         }
 
-        var tempFile = Path.Combine(Path.GetTempPath(), $"pipeline-check-{pipeline.Id.Value}-{DateTime.Now:yyyyMMdd-HHmmss}.yml");
+        var tempFile = Path.Combine(
+            Path.GetTempPath(),
+            $"pipeline-check-{pipeline.Id.Value}-{DateTime.Now:yyyyMMdd-HHmmss}.yml"
+        );
         await File.WriteAllTextAsync(tempFile, finalYaml);
 
         _interactionService.DisplaySuccess($"Pipeline YAML expanded successfully.");
@@ -73,10 +76,7 @@ internal sealed class RunCommand(
     /// <param name="parameter">Template parameters as key=value pairs.</param>
     /// <param name="variable">Pipeline variable overrides as key=value pairs.</param>
     [Command("run")]
-    public async Task RunAsync(
-        [Argument] string definitionPath,
-        string[]? parameter = null,
-        string[]? variable = null)
+    public async Task RunAsync([Argument] string definitionPath, string[]? parameter = null, string[]? variable = null)
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
@@ -98,7 +98,8 @@ internal sealed class RunCommand(
         {
             runInfo = await _interactionService.ShowLoadingAsync(
                 "Queuing run...",
-                () => _pipelinesService.RunPipelineAsync(pipeline, refName, templateParameters, variables));
+                () => _pipelinesService.RunPipelineAsync(pipeline, refName, templateParameters, variables)
+            );
         }
         catch (Exception ex)
         {
@@ -113,11 +114,15 @@ internal sealed class RunCommand(
     {
         var workingTree = await _gitService.GetWorkingTreeStatusAsync();
         if (!workingTree.IsClean)
-            throw new UserFacingException("Working tree has uncommitted changes. Commit or stash changes before running check.");
+            throw new UserFacingException(
+                "Working tree has uncommitted changes. Commit or stash changes before running check."
+            );
 
         var upstream = await _gitService.GetUpstreamBranchAsync();
         if (upstream is null)
-            throw new UserFacingException("No upstream branch configured. Set an upstream branch before running check.");
+            throw new UserFacingException(
+                "No upstream branch configured. Set an upstream branch before running check."
+            );
 
         var aheadBehind = await _gitService.GetAheadBehindAsync();
         if (aheadBehind is null)
@@ -125,45 +130,44 @@ internal sealed class RunCommand(
 
         var (ahead, behind) = aheadBehind.Value;
         if (ahead > 0 || behind > 0)
-            throw new UserFacingException($"Branch is {ahead} ahead and {behind} behind upstream. Push/pull to sync before running check.");
+            throw new UserFacingException(
+                $"Branch is {ahead} ahead and {behind} behind upstream. Push/pull to sync before running check."
+            );
     }
 
-    private async Task ValidateVariablesAsync(
-        LocalPipelineInfo pipeline,
-        Dictionary<string, string> variables)
+    private async Task ValidateVariablesAsync(LocalPipelineInfo pipeline, Dictionary<string, string> variables)
     {
         if (variables.Count == 0)
             return;
 
         var definedVariables = await _pipelinesService.GetVariablesAsync(pipeline);
-        var definedNames = definedVariables
-            .ToDictionary(v => v.Name, v => v, StringComparer.OrdinalIgnoreCase);
+        var definedNames = definedVariables.ToDictionary(v => v.Name, v => v, StringComparer.OrdinalIgnoreCase);
 
-        var unknownVars = variables.Keys
-            .Where(k => !definedNames.ContainsKey(k))
-            .ToList();
+        var unknownVars = variables.Keys.Where(k => !definedNames.ContainsKey(k)).ToList();
 
         if (unknownVars.Count > 0)
         {
-            var defined = definedVariables.Count > 0
-                ? string.Join(", ", definedVariables.Select(v => v.Name))
-                : "(none)";
+            var defined =
+                definedVariables.Count > 0 ? string.Join(", ", definedVariables.Select(v => v.Name)) : "(none)";
             throw new UserFacingException(
-                $"Unknown variable(s): {string.Join(", ", unknownVars)}. Defined variables: {defined}");
+                $"Unknown variable(s): {string.Join(", ", unknownVars)}. Defined variables: {defined}"
+            );
         }
 
-        var nonOverridableVars = variables.Keys
-            .Where(k => definedNames.TryGetValue(k, out var v) && !v.AllowOverride)
+        var nonOverridableVars = variables
+            .Keys.Where(k => definedNames.TryGetValue(k, out var v) && !v.AllowOverride)
             .ToList();
 
         if (nonOverridableVars.Count > 0)
             throw new UserFacingException(
-                $"Variable(s) not allowed to override: {string.Join(", ", nonOverridableVars)}. Set 'Settable at queue time' in the pipeline definition.");
+                $"Variable(s) not allowed to override: {string.Join(", ", nonOverridableVars)}. Set 'Settable at queue time' in the pipeline definition."
+            );
     }
 
     private async Task ValidateParametersAsync(
         LocalPipelineInfo pipeline,
-        Dictionary<string, string> templateParameters)
+        Dictionary<string, string> templateParameters
+    )
     {
         if (templateParameters.Count == 0)
             return;
@@ -172,21 +176,19 @@ internal sealed class RunCommand(
         if (pipelineYaml is null)
             throw new UserFacingException("Failed to parse pipeline YAML file for parameter validation.");
 
-        var definedNames = pipelineYaml.Parameters
-            .Select(p => p.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var definedNames = pipelineYaml.Parameters.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var unknownParams = templateParameters.Keys
-            .Where(k => !definedNames.Contains(k))
-            .ToList();
+        var unknownParams = templateParameters.Keys.Where(k => !definedNames.Contains(k)).ToList();
 
         if (unknownParams.Count > 0)
         {
-            var defined = pipelineYaml.Parameters.Count > 0
-                ? string.Join(", ", pipelineYaml.Parameters.Select(p => p.Name))
-                : "(none)";
+            var defined =
+                pipelineYaml.Parameters.Count > 0
+                    ? string.Join(", ", pipelineYaml.Parameters.Select(p => p.Name))
+                    : "(none)";
             throw new UserFacingException(
-                $"Unknown parameter(s): {string.Join(", ", unknownParams)}. Defined parameters: {defined}");
+                $"Unknown parameter(s): {string.Join(", ", unknownParams)}. Defined parameters: {defined}"
+            );
         }
     }
 

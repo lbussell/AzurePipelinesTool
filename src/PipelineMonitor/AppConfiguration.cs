@@ -23,7 +23,8 @@ internal static class XdgConfigurationExtensions
     public static IHostApplicationBuilder AddXdgAppConfiguration(
         this IHostApplicationBuilder builder,
         string appNameDirectory,
-        string fileName = DefaultFileName)
+        string fileName = DefaultFileName
+    )
     {
         var configPath = GetOrCreateConfigFile(appNameDirectory, fileName);
         builder.Configuration.AddJsonFile(configPath, optional: false, reloadOnChange: true);

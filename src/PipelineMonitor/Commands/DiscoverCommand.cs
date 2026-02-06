@@ -10,7 +10,8 @@ namespace PipelineMonitor.Commands;
 internal sealed class DiscoverCommand(
     IAnsiConsole ansiConsole,
     InteractionService interactionService,
-    PipelinesService pipelinesService)
+    PipelinesService pipelinesService
+)
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly InteractionService _interactionService = interactionService;
@@ -19,13 +20,12 @@ internal sealed class DiscoverCommand(
     [Command("discover")]
     public async Task ExecuteAsync()
     {
-        var pipelinesTask = _pipelinesService
-            .GetLocalPipelinesAsync()
-            .ToListAsync()
-            .AsTask();
+        var pipelinesTask = _pipelinesService.GetLocalPipelinesAsync().ToListAsync().AsTask();
 
-        IReadOnlyList<LocalPipelineInfo> pipelines = await _interactionService
-            .ShowLoadingAsync("Loading pipelines...", () => pipelinesTask);
+        IReadOnlyList<LocalPipelineInfo> pipelines = await _interactionService.ShowLoadingAsync(
+            "Loading pipelines...",
+            () => pipelinesTask
+        );
 
         foreach (var pipeline in pipelines)
         {

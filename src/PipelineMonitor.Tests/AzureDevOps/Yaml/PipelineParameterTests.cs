@@ -88,7 +88,7 @@ public class PipelineParameterTests
             Type = "string",
             Default = "defaultValue",
             DisplayName = "My Parameter",
-            Values = values
+            Values = values,
         };
 
         Assert.AreEqual("myParam", parameter.Name);

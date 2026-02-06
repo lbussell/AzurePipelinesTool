@@ -21,7 +21,8 @@ internal sealed class VssConnectionProvider(AzureCredentialProvider azureCredent
         var cacheKey = organization.AbsoluteUri;
         var lazyConnection = _connectionCache.GetOrAdd(
             cacheKey,
-            _ => new Lazy<VssConnection>(() => CreateConnection(organization)));
+            _ => new Lazy<VssConnection>(() => CreateConnection(organization))
+        );
         return lazyConnection.Value;
     }
 
@@ -41,5 +42,3 @@ internal sealed class VssConnectionProvider(AzureCredentialProvider azureCredent
         return vssConnection;
     }
 }
-
-

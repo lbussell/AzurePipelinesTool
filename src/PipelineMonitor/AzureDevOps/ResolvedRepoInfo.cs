@@ -10,4 +10,5 @@ namespace PipelineMonitor.AzureDevOps;
 internal sealed record ResolvedRepoInfo(
     OrganizationInfo? Organization,
     ProjectInfo? Project,
-    RepositoryInfo? Repository);
+    RepositoryInfo? Repository
+);

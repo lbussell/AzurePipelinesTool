@@ -20,13 +20,11 @@ internal interface IProcessRunner
         string executable,
         string arguments,
         bool allowNonZeroExitCode = false,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 /// <summary>
 /// Result of a process execution.
 /// </summary>
-internal sealed record ProcessResult(
-    int ExitCode,
-    string StandardOutput,
-    string StandardError);
+internal sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError);

@@ -25,7 +25,8 @@ internal sealed class OrganizationDiscoveryService(VssConnectionProvider connect
     /// Gets all Azure DevOps organizations the authenticated user has access to.
     /// </summary>
     public async Task<IReadOnlyList<OrganizationInfo>> GetAccessibleOrganizationsAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var connection = _connectionProvider.GetConnection(VspsUri);
 
@@ -34,22 +35,22 @@ internal sealed class OrganizationDiscoveryService(VssConnectionProvider connect
         var connectionData = await locationClient.GetConnectionDataAsync(
             connectOptions: ConnectOptions.None,
             lastChangeId: -1,
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
         var memberId = connectionData.AuthenticatedUser.Id;
 
         // Query for all organizations the user has access to
         var accountClient = connection.GetClient<AccountHttpClient>();
         var accounts = await accountClient.GetAccountsByMemberAsync(
             memberId: memberId,
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
 
         return accounts
-            .Select(account =>
-                new OrganizationInfo(
-                    Name: account.AccountName,
-                    Uri: new($"https://dev.azure.com/{account.AccountName}")))
+            .Select(account => new OrganizationInfo(
+                Name: account.AccountName,
+                Uri: new($"https://dev.azure.com/{account.AccountName}")
+            ))
             .ToList();
     }
 }
-
-

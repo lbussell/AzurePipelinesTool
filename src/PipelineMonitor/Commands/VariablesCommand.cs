@@ -12,17 +12,15 @@ internal sealed class VariablesCommand(
     IAnsiConsole ansiConsole,
     InteractionService interactionService,
     PipelineResolver pipelineResolver,
-    PipelinesService pipelinesService)
+    PipelinesService pipelinesService
+)
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly InteractionService _interactionService = interactionService;
     private readonly PipelineResolver _pipelineResolver = pipelineResolver;
     private readonly PipelinesService _pipelinesService = pipelinesService;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true
-    };
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     [Command("variables")]
     public async Task ShowAsync([Argument] string definitionPath)
@@ -41,18 +39,19 @@ internal sealed class VariablesCommand(
         foreach (var variable in variables)
         {
             var value = variable.IsSecret ? "***" : (variable.Value ?? "");
-            var flags = string.Join(", ",
-                new[] { variable.IsSecret ? "secret" : null, variable.AllowOverride ? "allow override" : null }
-                    .Where(f => f is not null));
+            var flags = string.Join(
+                ", ",
+                new[] { variable.IsSecret ? "secret" : null, variable.AllowOverride ? "allow override" : null }.Where(
+                    f => f is not null
+                )
+            );
             var flagsDisplay = flags.Length > 0 ? $" ({flags})" : "";
             _ansiConsole.WriteLine($"  {variable.Name}: {value}{flagsDisplay}");
         }
     }
 
     [Command("variables export")]
-    public async Task ExportAsync(
-        [Argument] string definitionPath,
-        [Argument] string outputFile)
+    public async Task ExportAsync([Argument] string definitionPath, [Argument] string outputFile)
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
@@ -66,10 +65,7 @@ internal sealed class VariablesCommand(
     }
 
     [Command("variables import")]
-    public async Task ImportAsync(
-        [Argument] string definitionPath,
-        [Argument] string inputFile,
-        bool clear = false)
+    public async Task ImportAsync([Argument] string definitionPath, [Argument] string inputFile, bool clear = false)
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
@@ -93,11 +89,14 @@ internal sealed class VariablesCommand(
             return;
         }
 
-        await _interactionService.ShowLoadingAsync("Setting variables...", async () =>
-        {
-            await _pipelinesService.SetVariablesAsync(pipeline, variables, clear);
-            return true;
-        });
+        await _interactionService.ShowLoadingAsync(
+            "Setting variables...",
+            async () =>
+            {
+                await _pipelinesService.SetVariablesAsync(pipeline, variables, clear);
+                return true;
+            }
+        );
 
         var actionDescription = clear ? "replaced with" : "imported";
         _interactionService.DisplaySuccess($"Successfully {actionDescription} {variables.Count} variable(s).");

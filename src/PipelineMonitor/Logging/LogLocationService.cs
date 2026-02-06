@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 using Microsoft.Extensions.Hosting;
-
 using NLog;
 using NLog.Targets;
 
@@ -15,7 +14,8 @@ internal sealed class LogLocationService(InteractionService interactionService) 
     public Task StartingAsync(CancellationToken _)
     {
         var fileTarget = LogManager.Configuration?.FindTargetByName<FileTarget>("logfile");
-        if (fileTarget is null) return Task.CompletedTask;
+        if (fileTarget is null)
+            return Task.CompletedTask;
         var logEventInfo = new LogEventInfo { TimeStamp = DateTime.Now };
         var fileName = fileTarget.FileName.Render(logEventInfo);
         _interactionService.DisplaySubtleMessage($"Log file: '{fileName}'");
@@ -23,8 +23,12 @@ internal sealed class LogLocationService(InteractionService interactionService) 
     }
 
     public Task StartAsync(CancellationToken _) => Task.CompletedTask;
+
     public Task StartedAsync(CancellationToken _) => Task.CompletedTask;
+
     public Task StoppingAsync(CancellationToken _) => Task.CompletedTask;
+
     public Task StopAsync(CancellationToken _) => Task.CompletedTask;
+
     public Task StoppedAsync(CancellationToken _) => Task.CompletedTask;
 }
