@@ -50,6 +50,7 @@ internal sealed class VariablesCommand(
         }
     }
 
+#if DEBUG
     [Command("variables export")]
     public async Task ExportAsync([Argument] string definitionPath, [Argument] string outputFile)
     {
@@ -101,4 +102,5 @@ internal sealed class VariablesCommand(
         var actionDescription = clear ? "replaced with" : "imported";
         _interactionService.DisplaySuccess($"Successfully {actionDescription} {variables.Count} variable(s).");
     }
+#endif
 }
