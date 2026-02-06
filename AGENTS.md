@@ -20,7 +20,7 @@ dotnet test --filter "FullyQualifiedName~TestMethodName"
 PipelineMonitor is a .NET CLI tool for discovering and monitoring Azure DevOps pipelines from the command line. It auto-detects Azure DevOps organization/project/repository from local Git remotes.
 
 **CLI Commands** (defined in `Program.cs` as the `App` class):
-- `discover` - List all local pipelines
+- `list` (alias: `ls`) - List all local pipelines
 - `info <definitionPath>` - Show pipeline info
 - `parameters <definitionPath>` - Show pipeline parameters from YAML
 - `runs <definitionPath>` - Show recent pipeline runs

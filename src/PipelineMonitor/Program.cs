@@ -47,7 +47,7 @@ builder.Services.AddHostedService<LogLocationService>();
 
 var consoleAppBuilder = builder.ToConsoleAppBuilder();
 consoleAppBuilder.UseFilter<ExceptionHandlingFilter>();
-consoleAppBuilder.Add<DiscoverCommand>();
+consoleAppBuilder.Add<ListCommand>();
 consoleAppBuilder.Add<InfoCommand>();
 consoleAppBuilder.Add<RunCommand>();
 consoleAppBuilder.Add<ParametersCommand>();

@@ -7,7 +7,7 @@ using Spectre.Console;
 
 namespace PipelineMonitor.Commands;
 
-internal sealed class DiscoverCommand(
+internal sealed class ListCommand(
     IAnsiConsole ansiConsole,
     InteractionService interactionService,
     PipelinesService pipelinesService
@@ -17,7 +17,7 @@ internal sealed class DiscoverCommand(
     private readonly InteractionService _interactionService = interactionService;
     private readonly PipelinesService _pipelinesService = pipelinesService;
 
-    [Command("discover")]
+    [Command("list|ls")]
     public async Task ExecuteAsync()
     {
         var pipelinesTask = _pipelinesService.GetLocalPipelinesAsync().ToListAsync().AsTask();
