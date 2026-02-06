@@ -46,6 +46,7 @@ internal enum PipelineRunResult
     PartiallySucceeded,
     Failed,
     Canceled,
+    Skipped,
 }
 
 internal sealed record CommitInfo(string Sha, string Message, string Author, DateTime? Date);
