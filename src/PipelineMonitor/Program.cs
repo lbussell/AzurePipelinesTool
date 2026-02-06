@@ -53,13 +53,13 @@ consoleAppBuilder.UseFilter<ExceptionHandlingFilter>();
 consoleAppBuilder.Add<ListCommand>();
 consoleAppBuilder.Add<InfoCommand>();
 consoleAppBuilder.Add<RunCommand>();
-consoleAppBuilder.Add<ParametersCommand>();
-consoleAppBuilder.Add<VariablesCommand>();
 consoleAppBuilder.Add<StatusCommand>();
 consoleAppBuilder.Add<CancelCommand>();
 
 // In-development commands
 #if DEBUG
+consoleAppBuilder.Add<ParametersCommand>();
+consoleAppBuilder.Add<VariablesCommand>();
 consoleAppBuilder.Add<RunsCommand>();
 #endif
 

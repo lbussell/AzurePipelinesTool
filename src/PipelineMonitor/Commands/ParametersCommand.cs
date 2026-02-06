@@ -37,27 +37,6 @@ internal sealed class ParametersCommand(
 
         _ansiConsole.WriteLine("Parameters:");
         _ansiConsole.WriteLine();
-
-        foreach (var param in pipelineYaml.Parameters)
-        {
-            if (!string.IsNullOrWhiteSpace(param.DisplayName))
-                _ansiConsole.WriteLine($"  {param.DisplayName.Trim()}");
-
-            var defaultText = "";
-            if (
-                param.ParameterType is PipelineParameterType.StringList
-                && param.Default is IEnumerable<object> defaults
-            )
-            {
-                defaultText = string.Join(", ", defaults.Select(d => d.ToString() ?? "unknown"));
-            }
-            else if (param.Default is not null)
-            {
-                defaultText = param.Default.ToString() ?? "";
-            }
-
-            _ansiConsole.WriteLine($"  {param.Name}: {defaultText}");
-            _ansiConsole.WriteLine();
-        }
+        _ansiConsole.DisplayParameters(pipelineYaml.Parameters);
     }
 }

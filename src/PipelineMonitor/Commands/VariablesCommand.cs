@@ -34,21 +34,9 @@ internal sealed class VariablesCommand(
             return;
         }
 
-        foreach (var variable in variables)
-        {
-            var value = variable.IsSecret ? "***" : (variable.Value ?? "");
-            var flags = string.Join(
-                ", ",
-                new[] { variable.IsSecret ? "secret" : null, variable.AllowOverride ? "allow override" : null }.Where(
-                    f => f is not null
-                )
-            );
-            var flagsDisplay = flags.Length > 0 ? $" ({flags})" : "";
-            _ansiConsole.WriteLine($"  {variable.Name}: {value}{flagsDisplay}");
-        }
+        _ansiConsole.DisplayVariables(variables);
     }
 
-#if DEBUG
     [Command("variables export")]
     public async Task ExportAsync([Argument] string definitionPath, [Argument] string outputFile)
     {
@@ -89,5 +77,4 @@ internal sealed class VariablesCommand(
         var actionDescription = clear ? "replaced with" : "imported";
         _interactionService.DisplaySuccess($"Successfully {actionDescription} {variables.Count} variable(s).");
     }
-#endif
 }
