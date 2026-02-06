@@ -11,13 +11,15 @@ internal sealed class StatusCommand(
     IAnsiConsole ansiConsole,
     InteractionService interactionService,
     PipelinesService pipelinesService,
-    RepoInfoResolver repoInfoResolver
+    BuildIdResolver buildIdResolver,
+    IEnvironment environment
 )
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly InteractionService _interactionService = interactionService;
     private readonly PipelinesService _pipelinesService = pipelinesService;
-    private readonly RepoInfoResolver _repoInfoResolver = repoInfoResolver;
+    private readonly BuildIdResolver _buildIdResolver = buildIdResolver;
+    private readonly IEnvironment _environment = environment;
 
     /// <summary>
     /// Show the status of a pipeline run.
@@ -31,7 +33,7 @@ internal sealed class StatusCommand(
         if (job is not null && stage is null)
             throw new UserFacingException("--job requires --stage to be specified.");
 
-        var (org, project, buildId) = await ResolveArgumentAsync(buildIdOrUrl);
+        var (org, project, buildId) = await _buildIdResolver.ResolveAsync(buildIdOrUrl);
 
         var timeline = await _interactionService.ShowLoadingAsync(
             "Fetching timeline...",
@@ -66,6 +68,14 @@ internal sealed class StatusCommand(
             var completedJobs = stageInfo.Jobs.Count(j => j.State == TimelineRecordStatus.Completed);
             var totalJobs = stageInfo.Jobs.Count;
             _ansiConsole.WriteLine($"{stageInfo.Name} - {stateLabel} (Jobs: {completedJobs}/{totalJobs} complete)");
+        }
+
+        var isRunning = overallState is "Running" or "Pending";
+        if (isRunning)
+        {
+            _ansiConsole.WriteLine();
+            var exe = Path.GetFileNameWithoutExtension(_environment.ProcessPath) ?? "pipelinemon";
+            _interactionService.DisplaySubtleMessage($"To cancel: {exe} cancel {buildId}");
         }
     }
 
@@ -181,87 +191,4 @@ internal sealed class StatusCommand(
             _ => -1,
         };
 
-    private async Task<(OrganizationInfo Org, ProjectInfo Project, int BuildId)> ResolveArgumentAsync(
-        string buildIdOrUrl)
-    {
-        if (TryParseAzureDevOpsUrl(buildIdOrUrl, out var orgName, out var projectName, out var buildId))
-        {
-            var org = new OrganizationInfo(orgName, new Uri($"https://dev.azure.com/{orgName}"));
-            var project = new ProjectInfo(projectName);
-            return (org, project, buildId);
-        }
-
-        if (!int.TryParse(buildIdOrUrl, out var id))
-            throw new UserFacingException(
-                $"Invalid argument '{buildIdOrUrl}'. Provide a numeric build ID or an Azure DevOps build results URL.");
-
-        var repoInfo = await _repoInfoResolver.ResolveAsync();
-        return repoInfo.Organization is null || repoInfo.Project is null
-            ? throw new UserFacingException(
-                "Could not detect Azure DevOps organization/project from Git remotes. Use a full build URL instead.")
-            : ((OrganizationInfo Org, ProjectInfo Project, int BuildId))(repoInfo.Organization, repoInfo.Project, id);
-    }
-
-    /// <summary>
-    /// Parses Azure DevOps build URLs in both modern and legacy formats, handling any query parameter
-    /// order and URL-encoded org/project names.
-    /// </summary>
-    private static bool TryParseAzureDevOpsUrl(
-        string input,
-        out string orgName,
-        out string projectName,
-        out int buildId)
-    {
-        orgName = "";
-        projectName = "";
-        buildId = 0;
-
-        if (!Uri.TryCreate(input, UriKind.Absolute, out var uri))
-            return false;
-
-        if (!uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase)
-            && !uri.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        // Extract buildId from query string regardless of parameter order
-        var query = uri.Query;
-        if (string.IsNullOrEmpty(query))
-            return false;
-
-        string? buildIdValue = null;
-        foreach (var param in query.TrimStart('?').Split('&'))
-        {
-            var eqIndex = param.IndexOf('=');
-            if (eqIndex <= 0)
-                continue;
-            if (param[..eqIndex].Equals("buildId", StringComparison.OrdinalIgnoreCase))
-            {
-                buildIdValue = param[(eqIndex + 1)..];
-                break;
-            }
-        }
-
-        if (buildIdValue is null || !int.TryParse(buildIdValue, out buildId))
-            return false;
-
-        var pathParts = uri.AbsolutePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-        // Modern: dev.azure.com/{org}/{project}/_build/results
-        if (uri.Host.Equals("dev.azure.com", StringComparison.OrdinalIgnoreCase) && pathParts.Length >= 2)
-        {
-            orgName = Uri.UnescapeDataString(pathParts[0]);
-            projectName = Uri.UnescapeDataString(pathParts[1]);
-            return true;
-        }
-
-        // Legacy: {org}.visualstudio.com/{project}/_build/results
-        if (uri.Host.EndsWith(".visualstudio.com", StringComparison.OrdinalIgnoreCase) && pathParts.Length >= 1)
-        {
-            orgName = uri.Host.Split('.')[0];
-            projectName = Uri.UnescapeDataString(pathParts[0]);
-            return true;
-        }
-
-        return false;
-    }
 }

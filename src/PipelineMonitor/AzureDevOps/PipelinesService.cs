@@ -390,4 +390,33 @@ internal sealed class PipelinesService(
 
         return BuildTimelineInfo.Parse(timeline.Records);
     }
+
+    public async Task CancelBuildAsync(
+        OrganizationInfo org,
+        ProjectInfo project,
+        int buildId,
+        CancellationToken ct = default
+    )
+    {
+        var connection = _vssConnectionProvider.GetConnection(org.Uri);
+        var buildsClient = connection.GetClient<BuildHttpClient>();
+
+        var build = await buildsClient.GetBuildAsync(
+            project: project.Name,
+            buildId: buildId,
+            cancellationToken: ct
+        );
+
+        if (build.Status == BuildStatus.Completed)
+            throw new UserFacingException($"Build {buildId} has already completed with result: {build.Result}.");
+
+        if (build.Status == BuildStatus.Cancelling)
+            throw new UserFacingException($"Build {buildId} is already being canceled.");
+
+        build.Status = BuildStatus.Cancelling;
+
+#pragma warning disable CS0618 // UpdateBuildAsync compat overload is functionally identical
+        await buildsClient.UpdateBuildAsync(build, project.Name, buildId, cancellationToken: ct);
+#pragma warning restore CS0618
+    }
 }

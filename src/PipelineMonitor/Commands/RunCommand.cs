@@ -15,7 +15,8 @@ internal sealed class RunCommand(
     PipelineResolver pipelineResolver,
     PipelineYamlService pipelineYamlService,
     PipelinesService pipelinesService,
-    GitService gitService
+    GitService gitService,
+    IEnvironment environment
 )
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
@@ -24,6 +25,7 @@ internal sealed class RunCommand(
     private readonly PipelineYamlService _pipelineYamlService = pipelineYamlService;
     private readonly PipelinesService _pipelinesService = pipelinesService;
     private readonly GitService _gitService = gitService;
+    private readonly IEnvironment _environment = environment;
 
     /// <summary>
     /// Preview-expand a pipeline's YAML by calling the Azure DevOps Preview API.
@@ -114,6 +116,8 @@ internal sealed class RunCommand(
 
         _interactionService.DisplaySuccess($"Pipeline run queued successfully.");
         _ansiConsole.MarkupLineInterpolated($"Run: [link={runInfo.WebUrl}]{runInfo.WebUrl}[/]");
+        var exe = Path.GetFileNameWithoutExtension(_environment.ProcessPath) ?? "pipelinemon";
+        _interactionService.DisplaySubtleMessage($"To cancel: {exe} cancel {runInfo.Id.Value}");
     }
 
     private async Task EnsureGitInSyncAsync()
