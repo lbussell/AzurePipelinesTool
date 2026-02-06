@@ -24,6 +24,7 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 builder.AddXdgAppConfiguration(appNameDirectory: nameof(PipelineMonitor));
 
 builder.Services.TryAddSingleton<IProcessRunner, CliWrapProcessRunner>();
+builder.Services.TryAddSingleton<IEnvironment, SystemEnvironment>();
 builder.Services.TryAddSingleton<GitService>();
 builder.Services.TryAddSingleton<AzureCredentialProvider>();
 builder.Services.TryAddSingleton<VssConnectionProvider>();
@@ -35,6 +36,7 @@ builder.Services.TryAddSingleton(_ => AnsiConsole.Console);
 builder.Services.TryAddSingleton<InteractionService>();
 builder.Services.TryAddSingleton<PipelineYamlService>();
 builder.Services.TryAddSingleton<PipelineResolver>();
+builder.Services.TryAddSingleton<BuildIdResolver>();
 
 // Add file logging
 builder.Logging.ClearProviders();
@@ -54,5 +56,6 @@ consoleAppBuilder.Add<ParametersCommand>();
 consoleAppBuilder.Add<VariablesCommand>();
 consoleAppBuilder.Add<RunsCommand>();
 consoleAppBuilder.Add<StatusCommand>();
+consoleAppBuilder.Add<CancelCommand>();
 
 await consoleAppBuilder.RunAsync(args);
