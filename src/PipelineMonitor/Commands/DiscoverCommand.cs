@@ -3,16 +3,13 @@
 
 using ConsoleAppFramework;
 using PipelineMonitor.AzureDevOps;
-using Spectre.Console;
 
 namespace PipelineMonitor.Commands;
 
 internal sealed class DiscoverCommand(
-    IAnsiConsole ansiConsole,
     InteractionService interactionService,
     PipelinesService pipelinesService)
 {
-    private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly InteractionService _interactionService = interactionService;
     private readonly PipelinesService _pipelinesService = pipelinesService;
 
@@ -25,19 +22,14 @@ internal sealed class DiscoverCommand(
             .AsTask();
 
         IReadOnlyList<LocalPipelineInfo> pipelines = await _interactionService
-            .ShowStatusAsync("Loading pipelines...", () => pipelinesTask);
-
-        var table = new Table()
-            .Border(TableBorder.Simple)
-            .AddColumn("Definition")
-            .AddColumn("Pipeline");
+            .ShowLoadingAsync("Loading pipelines...", () => pipelinesTask);
 
         foreach (var pipeline in pipelines)
-            table.AddRow(
-                $"[blue]{pipeline.RelativePath}[/]",
-                $"[bold green]{pipeline.Name}[/]");
-
-        _ansiConsole.Write(table);
-        _ansiConsole.WriteLine();
+        {
+            Console.WriteLine();
+            Console.WriteLine($"{pipeline.Name}");
+            Console.WriteLine($"File: {pipeline.RelativePath}");
+            Console.WriteLine($"ID: {pipeline.Id.Value}");
+        }
     }
 }

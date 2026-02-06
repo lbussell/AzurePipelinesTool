@@ -2,22 +2,18 @@
 // SPDX-License-Identifier: MIT
 
 using ConsoleAppFramework;
-using PipelineMonitor.AzureDevOps;
-using Spectre.Console;
 
 namespace PipelineMonitor.Commands;
 
 internal sealed class InfoCommand(
-    IAnsiConsole ansiConsole,
     PipelineResolver pipelineResolver)
 {
-    private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly PipelineResolver _pipelineResolver = pipelineResolver;
 
     [Command("info")]
     public async Task ExecuteAsync([Argument] string definitionPath)
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
-        _ansiConsole.MarkupLine($"[blue]{Markup.Escape(pipeline.RelativePath)}[/] refers to pipeline [bold green]{Markup.Escape(pipeline.Name)}[/] [dim](ID: {pipeline.Id.Value})[/]");
+        Console.WriteLine($"{pipeline.RelativePath} -> {pipeline.Name} (ID: {pipeline.Id.Value})");
     }
 }

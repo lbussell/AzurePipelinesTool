@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 using Spectre.Console;
-using Spectre.Console.Rendering;
 
 namespace PipelineMonitor;
 
@@ -14,20 +13,26 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
         && !Console.IsOutputRedirected
         && ansiConsole.Profile.Capabilities.Interactive;
 
-    public async Task<T> ShowStatusAsync<T>(string statusText, Func<Task<T>> action)
+    public async Task<T> ShowLoadingAsync<T>(string statusText, Func<Task<T>> action)
     {
-        // TODO: avoid spinners in non-interactive environments
-        return await _ansiConsole.Status()
-            .Spinner(Spinner.Known.Default)
-            .StartAsync(statusText, (context) => action());
+        Console.Write(statusText);
+        try
+        {
+            var result = await action();
+            Console.WriteLine(" Done.");
+            return result;
+        }
+        catch
+        {
+            Console.WriteLine();
+            throw;
+        }
     }
 
     public void DisplaySubtleMessage(string message, bool escapeMarkup = true)
     {
         var displayMessage = escapeMarkup ? message.EscapeMarkup() : message;
-        IRenderable text = new Markup($"[dim]{displayMessage}[/]");
-        _ansiConsole.Write(text);
-        _ansiConsole.WriteLine();
+        _ansiConsole.MarkupLine($"[dim]{displayMessage}[/]");
     }
 
     public void DisplayError(string message, bool escapeMarkup = true) =>
@@ -134,15 +139,3 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
     }
 }
 
-internal static class ConsoleRenderingExtensions
-{
-    extension (IRenderable renderable)
-    {
-        public IRenderable PadLeft(int lines = 1) => new Padder(renderable).Padding(lines, 0, 0, 0);
-        public IRenderable PadTop(int lines = 1) => new Padder(renderable).Padding(0, lines, 0, 0);
-        public IRenderable PadRight(int lines = 1) => new Padder(renderable).Padding(0, 0, lines, 0);
-        public IRenderable PadBottom(int lines = 1) => new Padder(renderable).Padding(0, 0, 0, lines);
-        public IRenderable PadVertical(int lines = 1) => new Padder(renderable).Padding(0, lines, 0, lines);
-        public IRenderable PadHorizontal(int lines = 1) => new Padder(renderable).Padding(lines, 0, lines, 0);
-    }
-}

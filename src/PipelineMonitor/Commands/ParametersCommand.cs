@@ -2,19 +2,16 @@
 // SPDX-License-Identifier: MIT
 
 using ConsoleAppFramework;
+using PipelineMonitor.AzureDevOps;
 using PipelineMonitor.AzureDevOps.Yaml;
-using Spectre.Console;
-using Spectre.Console.Rendering;
 
 namespace PipelineMonitor.Commands;
 
 internal sealed class ParametersCommand(
-    IAnsiConsole ansiConsole,
     InteractionService interactionService,
     PipelineResolver pipelineResolver,
     PipelineYamlService pipelineYamlService)
 {
-    private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly InteractionService _interactionService = interactionService;
     private readonly PipelineResolver _pipelineResolver = pipelineResolver;
     private readonly PipelineYamlService _pipelineYamlService = pipelineYamlService;
@@ -25,7 +22,7 @@ internal sealed class ParametersCommand(
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
         var parseTask = _pipelineYamlService.ParseAsync(pipeline.DefinitionFile.FullName);
-        var pipelineYaml = await _interactionService.ShowStatusAsync("Parsing YAML...", () => parseTask);
+        var pipelineYaml = await _interactionService.ShowLoadingAsync("Parsing YAML...", () => parseTask);
         if (pipelineYaml is null)
             throw new UserFacingException("Failed to parse pipeline YAML file.");
 
@@ -35,34 +32,27 @@ internal sealed class ParametersCommand(
             return;
         }
 
-        IRenderable title = new Markup("[bold]Parameters[/]").PadVertical();
-        List<IRenderable> content = [title];
+        Console.WriteLine("Parameters:");
+        Console.WriteLine();
 
         foreach (var param in pipelineYaml.Parameters)
         {
-            List<IRenderable> paramContent = [];
-
             if (!string.IsNullOrWhiteSpace(param.DisplayName))
-                paramContent.Add(new Markup(param.DisplayName.Trim().EscapeMarkup()));
+                Console.WriteLine($"  {param.DisplayName.Trim()}");
 
-            string defaultText = "";
+            var defaultText = "";
             if (param.ParameterType is PipelineParameterType.StringList
                 && param.Default is IEnumerable<object> defaults)
             {
-                defaultText = string.Join(", ", defaults.Select(d => d.ToString() ?? "unknown")).EscapeMarkup();
+                defaultText = string.Join(", ", defaults.Select(d => d.ToString() ?? "unknown"));
             }
             else if (param.Default is not null)
             {
-                defaultText = param.Default.ToString().EscapeMarkup();
+                defaultText = param.Default.ToString() ?? "";
             }
 
-            paramContent.Add(new Markup($"[blue]{param.Name.EscapeMarkup()}[/]: [dim]{defaultText}[/]"));
-
-            content.Add(new Rows(paramContent).PadBottom());
+            Console.WriteLine($"  {param.Name}: {defaultText}");
+            Console.WriteLine();
         }
-
-        var display = new Rows(content);
-        _ansiConsole.Write(display);
-        _ansiConsole.WriteLine();
     }
 }

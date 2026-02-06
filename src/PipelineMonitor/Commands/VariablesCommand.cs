@@ -4,17 +4,14 @@
 using System.Text.Json;
 using ConsoleAppFramework;
 using PipelineMonitor.AzureDevOps;
-using Spectre.Console;
 
 namespace PipelineMonitor.Commands;
 
 internal sealed class VariablesCommand(
-    IAnsiConsole ansiConsole,
     InteractionService interactionService,
     PipelineResolver pipelineResolver,
     PipelinesService pipelinesService)
 {
-    private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly InteractionService _interactionService = interactionService;
     private readonly PipelineResolver _pipelineResolver = pipelineResolver;
     private readonly PipelinesService _pipelinesService = pipelinesService;
@@ -30,7 +27,7 @@ internal sealed class VariablesCommand(
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
         var variablesTask = _pipelinesService.GetVariablesAsync(pipeline);
-        var variables = await _interactionService.ShowStatusAsync("Loading variables...", () => variablesTask);
+        var variables = await _interactionService.ShowLoadingAsync("Loading variables...", () => variablesTask);
 
         if (variables.Count == 0)
         {
@@ -38,28 +35,15 @@ internal sealed class VariablesCommand(
             return;
         }
 
-        var table = new Table()
-            .Border(TableBorder.Simple)
-            .AddColumn("Name")
-            .AddColumn("Value")
-            .AddColumn("Secret")
-            .AddColumn("Allow Override");
-
         foreach (var variable in variables)
         {
-            var valueDisplay = variable.IsSecret ? "[dim]***[/]" : (variable.Value ?? string.Empty).EscapeMarkup();
-            var secretDisplay = variable.IsSecret ? "[yellow]Yes[/]" : "No";
-            var allowOverrideDisplay = variable.AllowOverride ? "Yes" : "No";
-
-            table.AddRow(
-                $"[blue]{variable.Name.EscapeMarkup()}[/]",
-                valueDisplay,
-                secretDisplay,
-                allowOverrideDisplay);
+            var value = variable.IsSecret ? "***" : (variable.Value ?? "");
+            var flags = string.Join(", ",
+                new[] { variable.IsSecret ? "secret" : null, variable.AllowOverride ? "allow override" : null }
+                    .Where(f => f is not null));
+            var flagsDisplay = flags.Length > 0 ? $" ({flags})" : "";
+            Console.WriteLine($"  {variable.Name}: {value}{flagsDisplay}");
         }
-
-        _ansiConsole.Write(table);
-        _ansiConsole.WriteLine();
     }
 
     [Command("variables export")]
@@ -70,7 +54,7 @@ internal sealed class VariablesCommand(
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
         var variablesTask = _pipelinesService.GetVariablesAsync(pipeline);
-        var variables = await _interactionService.ShowStatusAsync("Loading variables...", () => variablesTask);
+        var variables = await _interactionService.ShowLoadingAsync("Loading variables...", () => variablesTask);
 
         var json = JsonSerializer.Serialize(variables, JsonOptions);
 
@@ -106,7 +90,7 @@ internal sealed class VariablesCommand(
             return;
         }
 
-        await _interactionService.ShowStatusAsync("Setting variables...", async () =>
+        await _interactionService.ShowLoadingAsync("Setting variables...", async () =>
         {
             await _pipelinesService.SetVariablesAsync(pipeline, variables, clear);
             return true;

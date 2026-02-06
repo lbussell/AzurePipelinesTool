@@ -20,7 +20,7 @@ internal sealed class PipelineResolver(
             .AsTask();
 
         List<LocalPipelineInfo> pipelines = await _interactionService
-            .ShowStatusAsync("Loading Pipelines...", () => pipelinesTask);
+            .ShowLoadingAsync("Loading Pipelines...", () => pipelinesTask);
 
         return pipelines;
     }
