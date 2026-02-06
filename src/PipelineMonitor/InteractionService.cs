@@ -33,23 +33,6 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
         _ansiConsole.MarkupLine($"[{color}][[{messageType}]][/] {displayMessage}");
     }
 
-    public async Task<T> PromptAsync<T>(string prompt, T? defaultValue = default)
-        where T : notnull
-    {
-        if (!IsInteractive)
-        {
-            if (defaultValue is not null)
-                return defaultValue;
-            throw new InvalidOperationException($"Cannot prompt in non-interactive environment: {prompt}");
-        }
-
-        var textPrompt = new TextPrompt<T>(prompt);
-        if (defaultValue is not null)
-            textPrompt.DefaultValue(defaultValue);
-
-        return await Task.Run(() => _ansiConsole.Prompt(textPrompt));
-    }
-
     public async Task<T> SelectAsync<T>(
         string prompt,
         IEnumerable<T> choices,
@@ -77,59 +60,5 @@ internal sealed class InteractionService(IAnsiConsole ansiConsole)
             selection.UseConverter(displaySelector);
 
         return await Task.Run(() => _ansiConsole.Prompt(selection));
-    }
-
-    public async Task<IReadOnlyList<T>> MultiSelectAsync<T>(
-        string prompt,
-        IEnumerable<T> choices,
-        Func<T, string>? displaySelector = null,
-        IEnumerable<T>? defaults = null,
-        bool required = false
-    )
-        where T : notnull
-    {
-        if (!IsInteractive)
-            throw new InvalidOperationException($"Cannot prompt in non-interactive environment: {prompt}");
-
-        var multi = new MultiSelectionPrompt<T>().Title(prompt).AddChoices(choices);
-        if (required)
-            multi.Required();
-        if (displaySelector is not null)
-            multi.UseConverter(displaySelector);
-        if (defaults is not null)
-        {
-            foreach (var item in defaults)
-                multi.Select(item);
-        }
-
-        return await Task.Run(() => _ansiConsole.Prompt(multi));
-    }
-
-    public async Task<bool> ConfirmAsync(string prompt, bool defaultValue = false)
-    {
-        if (!IsInteractive)
-            return defaultValue;
-
-        var confirm = new ConfirmationPrompt(prompt) { DefaultValue = defaultValue };
-        return await Task.Run(() => _ansiConsole.Prompt(confirm));
-    }
-
-    public async Task<string> SelectAsync(string prompt, IEnumerable<string> suggestions)
-    {
-        const string SomethingElse = "Something else...";
-        List<string> choices = [.. suggestions, SomethingElse];
-
-        var selected = await SelectAsync<string>(prompt, choices);
-
-        if (selected == SomethingElse)
-        {
-            selected = await PromptAsync<string>(prompt);
-        }
-        else
-        {
-            _ansiConsole.MarkupLineInterpolated($"{prompt} [blue]{selected}[/]");
-        }
-
-        return selected;
     }
 }
