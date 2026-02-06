@@ -110,8 +110,7 @@ internal sealed class RunCommand(
 
         _interactionService.DisplaySuccess($"Pipeline run queued successfully.");
         _ansiConsole.MarkupLineInterpolated($"Run: [link={runInfo.WebUrl}]{runInfo.WebUrl}[/]");
-        var exe = Path.GetFileNameWithoutExtension(_environment.ProcessPath) ?? "pipelinemon";
-        _interactionService.DisplaySubtleMessage($"To cancel: {exe} cancel {runInfo.Id.Value}");
+        _interactionService.DisplaySubtleMessage($"To cancel, run `cancel {runInfo.Id.Value}`");
     }
 
     private async Task EnsureGitInSyncAsync()
