@@ -17,19 +17,8 @@ internal sealed class ListCommand(
     private readonly InteractionService _interactionService = interactionService;
     private readonly PipelinesService _pipelinesService = pipelinesService;
 
-    [Command("list")]
+    [Command("list|ls")]
     public async Task ExecuteAsync()
-    {
-        await ListPipelinesAsync();
-    }
-
-    [Command("ls")]
-    public async Task LsAsync()
-    {
-        await ListPipelinesAsync();
-    }
-
-    private async Task ListPipelinesAsync()
     {
         var pipelinesTask = _pipelinesService.GetLocalPipelinesAsync().ToListAsync().AsTask();
 
