@@ -24,10 +24,8 @@ internal sealed class ParametersCommand(
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
-        var parseTask = _pipelineYamlService.ParseAsync(pipeline.DefinitionFile.FullName);
-        var pipelineYaml = await _interactionService.ShowLoadingAsync("Parsing YAML...", () => parseTask);
-        if (pipelineYaml is null)
-            throw new UserFacingException("Failed to parse pipeline YAML file.");
+        var pipelineYaml = await _pipelineYamlService.ParseAsync(pipeline.DefinitionFile.FullName)
+            ?? throw new UserFacingException("Failed to parse pipeline YAML file.");
 
         if (pipelineYaml.Parameters.Count == 0)
         {
