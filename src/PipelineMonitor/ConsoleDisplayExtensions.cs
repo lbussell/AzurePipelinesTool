@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 using System.Collections;
+using PipelineMonitor.AzureDevOps;
 using PipelineMonitor.AzureDevOps.Yaml;
+using PipelineMonitor.Commands;
 using Spectre.Console;
 
 namespace PipelineMonitor;
@@ -43,6 +45,33 @@ internal static class ConsoleDisplayExtensions
             ansiConsole.WriteLine();
             ansiConsole.WriteLine(text);
             ansiConsole.WriteLine(new string('-', text.Length));
+        }
+
+        public void DisplayTimelineProgress(BuildTimelineInfo timeline, TimeSpan elapsed, int nextCheckSeconds)
+        {
+            var allJobs = timeline.Stages.SelectMany(s => s.Jobs).ToList();
+
+            ansiConsole.WriteLine(FormatStatusCounts("Stages", timeline.Stages.Select(s => s.State)));
+            ansiConsole.WriteLine(FormatStatusCounts("Jobs", allJobs.Select(j => j.State)));
+            ansiConsole.WriteLine(
+                $"Elapsed: {WaitCommand.FormatElapsed(elapsed)}. Next check in {nextCheckSeconds}s..."
+            );
+            ansiConsole.WriteLine();
+        }
+
+        private static string FormatStatusCounts(string label, IEnumerable<TimelineRecordStatus> states)
+        {
+            var counts = states.GroupBy(s => s).ToDictionary(g => g.Key, g => g.Count());
+
+            List<string> parts = [];
+            if (counts.TryGetValue(TimelineRecordStatus.Completed, out var completed))
+                parts.Add($"{completed} completed");
+            if (counts.TryGetValue(TimelineRecordStatus.InProgress, out var inProgress))
+                parts.Add($"{inProgress} in progress");
+            if (counts.TryGetValue(TimelineRecordStatus.Pending, out var pending))
+                parts.Add($"{pending} pending");
+
+            return $"{label}: {string.Join(", ", parts)}";
         }
     }
 
