@@ -1,0 +1,20 @@
+{
+  "name": "azure-pipelines-tools",
+  "owner": {
+    "name": "Logan Bussell"
+  },
+  "metadata": {
+    "description": "Azure Pipelines CLI tool skills for Claude Code",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "azp",
+      "source": "./",
+      "description": "Interact with Azure Pipelines from the terminal",
+      "version": "0.1.0",
+      "strict": false,
+      "skills": ["./skills/azp"]
+    }
+  ]
+}

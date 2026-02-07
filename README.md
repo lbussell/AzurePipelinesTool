@@ -1,75 +1,118 @@
-# AzurePipelinesTool
+# `azp` - Azure Pipelines Tool
 
-## Getting Started
+A CLI for interacting with Azure Pipelines from the terminal.
 
-### Prerequisites
-
-- Install the [.NET SDK](https://dotnet.microsoft.com/download)
-
-### Build and Test
-
-Build the project:
+## Installation
 
 ```bash
-dotnet build
+dotnet tool install -g azp
 ```
 
-Run tests:
+### Requirements
+
+- [.NET 10+ SDK](https://dotnet.microsoft.com/download)
+- Authenticated via [`azd auth login`](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference#azd-auth-login)
+- Run from within a Git repo whose remote points to Azure DevOps
+
+## Quick Reference
+
+| Command | Purpose |
+| ------- | ------- |
+| `azp list` | List all pipelines in the current repository |
+| `azp info <path>` | Show pipeline details: variables, parameters, metadata |
+| `azp check <path>` | Preview expanded YAML (dry run with template parameters) |
+| `azp run <path>` | Queue a pipeline run with parameters, variables, and stage skips |
+| `azp status <id>` | Show run status as a tree of stages, jobs, and tasks |
+| `azp cancel <id>` | Cancel a running pipeline build |
+| `azp wait <id>` | Poll until a run completes, with optional failure exit code |
+| `azp logs <id> <logId>` | Download logs for a specific task from a run |
+
+`<path>` is a relative path to the pipeline YAML file.
+`<id>` is a numeric build ID or a full Azure DevOps build results URL.
+
+## Usage
+
+Commands chain together in natural workflows.
+
+### Pipeline Development: list → info → check → run → wait
 
 ```bash
-dotnet test
+# Discover pipelines in the current repo
+azp list
+
+# Inspect a pipeline's variables and parameters
+azp info path/to/pipeline.yml
+
+# Validate YAML expansion with template parameters (dry run, no queue)
+azp check path/to/pipeline.yml -p env=staging
+
+# Queue the run (prints build URL and ID)
+azp run path/to/pipeline.yml -p env=staging --var imageTag=latest
+
+# Wait for completion using the build ID from the previous step
+azp wait 12345 -f
 ```
 
-## Publishing Your Package
+`check` and `run` require a clean working tree synced with upstream — commit
+and push first.
 
-This repository includes GitHub Actions workflows for automated building and
-publishing to NuGet.org.
-
-### Setting Up Trusted Publishing
-
-Run the setup script to configure GitHub and NuGet.org for trusted publishing:
+### Monitoring: status → logs
 
 ```bash
-dotnet run scripts/SetupPublishing.cs
+# View run status as a tree (stages → jobs → tasks)
+azp status 12345 -d 3
+
+# Download logs for a specific task (logId shown in status -d 3 output)
+azp logs 12345 42
+
+# Cancel a running build
+azp cancel 12345
 ```
 
-### Updating Package Version Numbers
+### Key Flags
 
-Version numbers are controlled in
-[`AzurePipelinesTool.csproj`](`./src/AzurePipelinesTool/AzurePipelinesTool.csproj`). This template
-starts with the version number `0.1.0`. I recommend that you follow [Semantic
-Versioning](https://semver.org/). In practice, that means doing the following:
+| Flag | Purpose | Commands |
+| ---- | ------- | -------- |
+| `-p key=value` | Template parameter override | `check`, `run` |
+| `--var key=value` | Pipeline variable override (must be settable at queue time) | `run` |
+| `-s`/`--skip` | Stage names to skip | `run` |
+| `-d 1\|2\|3` | Tree depth: 1=stages, 2=+jobs (default), 3=+tasks | `status` |
+| `-f` | Exit with non-zero code on failure/cancellation | `wait` |
 
-- Increment `<PatchVersion>` property whenever you make backwards-compatible
-  bug fixes.
-- Increment `<MinorVersion>` property whenever you add new features.
-- Increment `<MajorVersion>` property whenever you make breaking changes.
+## AI Agent Integration
 
-### Publishing a Pre-Release Package
+`azp` includes an agent skill so that AI coding assistants can use it to
+interact with Azure Pipelines on your behalf.
 
-Pre-release packages are useful for testing and early access. They include a
-version suffix like `-preview.yyyy.MM.dd`.
+### GitHub Copilot
 
-1. Go to the **Actions** tab in your GitHub repository
-2. Select the **Publish NuGet Package** workflow
-3. Click **Run workflow**
-4. Leave **"Publish as a stable version"** **unchecked** (default)
+Add the skill as a custom instruction in VS Code. Copy
+[`skills/azp/SKILL.md`](skills/azp/SKILL.md) to your workspace's
+`.github/instructions/` directory:
 
-The package will be published with a version like `0.1.0-preview.2025.12.21`.
+```bash
+cp skills/azp/SKILL.md .github/instructions/azp.instructions.md
+```
 
-### Publishing a Stable Release
+### Claude Code
 
-Stable releases have no pre-release suffix (e.g., `0.1.0`, `1.2.4`,
-`99.99.99`).
+Install the skill directly from this repository:
 
-1. **Update the version numbers** (see section below)
-2. Commit and push your changes
-3. Go to the **Actions** tab in your GitHub repository
-4. Select the **Publish NuGet Package** workflow
-5. Click **Run workflow**
-6. **Check** the **"Publish as a stable version"** checkbox
-7. Click **Run workflow**
+```bash
+claude mcp add-skill https://github.com/lbussell/AzurePipelinesTool
+```
 
-The package will be published with a stable version. You will then want to bump
-the major/minor/patch version so that you can start working on the next
-release.
+Or install from a local clone:
+
+```bash
+claude mcp add-skill /path/to/AzurePipelinesTool
+```
+
+## Development
+
+See [docs/development/](docs/development/) for build, test, and publishing
+instructions.
+
+## License
+
+[MIT](LICENSE)

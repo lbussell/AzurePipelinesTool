@@ -7,5 +7,5 @@
   },
   "license": "MIT",
   "keywords": ["azure", "pipelines", "devops", "ci", "cd"],
-  "skills": "../skills/"
+  "skills": "./skills/"
 }

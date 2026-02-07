@@ -39,6 +39,8 @@ dotnet run --project src/AzurePipelinesTool -- <command> [args]
 
 **Configuration**: XDG-compliant config stored at `~/.config/AzurePipelinesTool/config.json`. Build settings shared via `src/Directory.Build.props` and `src/Directory.Packages.props` (central package management).
 
+**Versioning**: The version is defined in `src/AzurePipelinesTool/AzurePipelinesTool.csproj` (`MajorVersion`, `MinorVersion`, `PatchVersion`). Follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). When updating the version, also update `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` to match.
+
 ## Tests
 
 Uses MSTest with [Verify](https://github.com/VerifyTests/Verify) for snapshot testing. Verified snapshots are `.verified.txt` files alongside test classes. Tests access internal members via `InternalsVisibleTo`.

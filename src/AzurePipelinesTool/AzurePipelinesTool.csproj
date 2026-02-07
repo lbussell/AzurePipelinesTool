@@ -40,6 +40,7 @@
   <PropertyGroup Label="Versioning">
     <!-- Update these version numbers manually. -->
     <!-- Follow https://semver.org/spec/v2.0.0.html -->
+    <!-- Also update version in .claude-plugin/plugin.json and .claude-plugin/marketplace.json -->
     <MajorVersion>0</MajorVersion>
     <MinorVersion>1</MinorVersion>
     <PatchVersion>0</PatchVersion>
