@@ -1,0 +1,16 @@
+﻿Succeeded — 3/3 stages complete
+
+├─ Build (Succeeded) — Jobs: 2/2 complete
+│  ├─ Build linux-amd64 (Succeeded)
+│  │  ├─ Initialize job (Succeeded)
+│  │  ├─ Checkout (Succeeded)
+│  │  └─ Build images (Succeeded)
+│  └─ Build linux-arm64 (Succeeded)
+│     ├─ Initialize job (Succeeded)
+│     └─ Build images (Succeeded)
+├─ Test (Succeeded) — Jobs: 1/1 complete
+│  └─ Test linux-amd64 (Succeeded)
+│     └─ Run tests (Succeeded)
+└─ Publish (Succeeded) — Jobs: 1/1 complete
+   └─ Publish images (Succeeded)
+      └─ Push to ACR (Succeeded)

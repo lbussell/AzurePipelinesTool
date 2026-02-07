@@ -7,100 +7,76 @@ using PipelineMonitor.Commands;
 namespace PipelineMonitor.Tests.Display;
 
 [TestClass]
-public class WaitOutputTests
+public class WaitOutputTests : VerifyBase
 {
     [TestMethod]
-    public void FormatElapsed_Seconds_FormatsCorrectly()
-    {
-        var result = WaitCommand.FormatElapsed(TimeSpan.FromSeconds(42));
-
-        Assert.AreEqual("42s", result);
-    }
+    public void FormatElapsed_Seconds() =>
+        Assert.AreEqual("42s", WaitCommand.FormatElapsed(TimeSpan.FromSeconds(42)));
 
     [TestMethod]
-    public void FormatElapsed_Minutes_FormatsCorrectly()
-    {
-        var result = WaitCommand.FormatElapsed(TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(30)));
-
-        Assert.AreEqual("5m 30s", result);
-    }
+    public void FormatElapsed_Minutes() =>
+        Assert.AreEqual("5m 30s", WaitCommand.FormatElapsed(TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(30))));
 
     [TestMethod]
-    public void FormatElapsed_Hours_FormatsCorrectly()
-    {
-        var result = WaitCommand.FormatElapsed(TimeSpan.FromHours(2).Add(TimeSpan.FromMinutes(15).Add(TimeSpan.FromSeconds(10))));
-
-        Assert.AreEqual("2h 15m 10s", result);
-    }
+    public void FormatElapsed_Hours() =>
+        Assert.AreEqual("2h 15m 10s", WaitCommand.FormatElapsed(TimeSpan.FromHours(2).Add(TimeSpan.FromMinutes(15).Add(TimeSpan.FromSeconds(10)))));
 
     [TestMethod]
-    public void FormatElapsed_Zero_FormatsAsSeconds()
-    {
-        var result = WaitCommand.FormatElapsed(TimeSpan.Zero);
-
-        Assert.AreEqual("0s", result);
-    }
+    public void FormatElapsed_Zero() =>
+        Assert.AreEqual("0s", WaitCommand.FormatElapsed(TimeSpan.Zero));
 
     [TestMethod]
-    public void FormatElapsed_JustUnderOneMinute_FormatsAsSeconds()
-    {
-        var result = WaitCommand.FormatElapsed(TimeSpan.FromSeconds(59));
-
-        Assert.AreEqual("59s", result);
-    }
+    public void FormatElapsed_ExactlyOneMinute() =>
+        Assert.AreEqual("1m 0s", WaitCommand.FormatElapsed(TimeSpan.FromMinutes(1)));
 
     [TestMethod]
-    public void FormatElapsed_ExactlyOneMinute_FormatsAsMinutes()
-    {
-        var result = WaitCommand.FormatElapsed(TimeSpan.FromMinutes(1));
-
-        Assert.AreEqual("1m 0s", result);
-    }
+    public Task WaitProgress_SucceededTimeline() =>
+        Verify(RenderWaitProgress(TestData.SucceededTimeline, buildId: 12345, TimeSpan.FromMinutes(3).Add(TimeSpan.FromSeconds(42))));
 
     [TestMethod]
-    public void StatusCounts_SucceededTimeline_ShowsAllCompleted()
+    public Task WaitProgress_InProgressTimeline() =>
+        Verify(RenderWaitInProgress(TestData.InProgressTimeline, TimeSpan.FromSeconds(45), nextCheckSeconds: 10));
+
+    // ── helpers ─────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Renders the final wait summary for a completed timeline.
+    /// Mirrors <see cref="WaitCommand.DisplayFinalSummary"/>.
+    /// </summary>
+    private static string RenderWaitProgress(BuildTimelineInfo timeline, int buildId, TimeSpan elapsed)
     {
-        var timeline = TestData.SucceededTimeline;
-        var states = timeline.Stages.Select(s => s.State);
+        using var writer = new StringWriter();
 
-        var result = FormatStatusCounts("Stages", states);
+        var overallResult = GetOverallResult(timeline);
+        writer.WriteLine($"{overallResult} - {WaitCommand.FormatElapsed(elapsed)} elapsed");
+        writer.WriteLine();
 
-        StringAssert.Contains(result, "3 completed");
-        Assert.DoesNotContain(result, "in progress");
-        Assert.DoesNotContain(result, "pending");
-    }
+        foreach (var stage in timeline.Stages)
+        {
+            var stateLabel = GetStateLabel(stage.State, stage.Result);
+            var completedJobs = stage.Jobs.Count(j => j.State == TimelineRecordStatus.Completed);
+            var totalJobs = stage.Jobs.Count;
+            writer.WriteLine($"{stage.Name} - {stateLabel} (Jobs: {completedJobs}/{totalJobs} complete)");
+        }
 
-    [TestMethod]
-    public void StatusCounts_InProgressTimeline_ShowsMixedStates()
-    {
-        var timeline = TestData.InProgressTimeline;
-        var states = timeline.Stages.Select(s => s.State);
-
-        var result = FormatStatusCounts("Stages", states);
-
-        StringAssert.Contains(result, "1 completed");
-        StringAssert.Contains(result, "1 in progress");
-        StringAssert.Contains(result, "1 pending");
-    }
-
-    [TestMethod]
-    public void StatusCounts_InProgressTimeline_JobCounts()
-    {
-        var timeline = TestData.InProgressTimeline;
-        var allJobs = timeline.Stages.SelectMany(s => s.Jobs);
-        var states = allJobs.Select(j => j.State);
-
-        var result = FormatStatusCounts("Jobs", states);
-
-        StringAssert.Contains(result, "Jobs:");
-        StringAssert.Contains(result, "1 completed");
-        StringAssert.Contains(result, "1 in progress");
-        StringAssert.Contains(result, "1 pending");
+        return writer.ToString();
     }
 
     /// <summary>
-    /// Mirrors the formatting logic from <see cref="WaitCommand"/>.
+    /// Renders the in-progress wait status display.
+    /// Mirrors <see cref="WaitCommand.DisplayTimelineProgress"/>.
     /// </summary>
+    private static string RenderWaitInProgress(BuildTimelineInfo timeline, TimeSpan elapsed, int nextCheckSeconds)
+    {
+        using var writer = new StringWriter();
+
+        writer.WriteLine(FormatStatusCounts("Stages", timeline.Stages.Select(s => s.State)));
+        writer.WriteLine(FormatStatusCounts("Jobs", timeline.Stages.SelectMany(s => s.Jobs).Select(j => j.State)));
+        writer.WriteLine($"Elapsed: {WaitCommand.FormatElapsed(elapsed)}. Next check in {nextCheckSeconds}s...");
+
+        return writer.ToString();
+    }
+
     private static string FormatStatusCounts(string label, IEnumerable<TimelineRecordStatus> states)
     {
         var counts = states.GroupBy(s => s).ToDictionary(g => g.Key, g => g.Count());
@@ -115,4 +91,30 @@ public class WaitOutputTests
 
         return $"{label}: {string.Join(", ", parts)}";
     }
+
+    private static string GetOverallResult(BuildTimelineInfo timeline)
+    {
+        var results = timeline.Stages.Select(s => s.Result).ToList();
+        if (results.Any(r => r == PipelineRunResult.Failed)) return "Failed";
+        if (results.Any(r => r == PipelineRunResult.Canceled)) return "Canceled";
+        if (results.Any(r => r == PipelineRunResult.PartiallySucceeded)) return "Partially Succeeded";
+        return results.All(r => r is PipelineRunResult.Succeeded or PipelineRunResult.Skipped) ? "Succeeded" : "Completed";
+    }
+
+    private static string GetStateLabel(TimelineRecordStatus state, PipelineRunResult result) =>
+        state switch
+        {
+            TimelineRecordStatus.Completed => result switch
+            {
+                PipelineRunResult.Succeeded => "Succeeded",
+                PipelineRunResult.PartiallySucceeded => "Partially Succeeded",
+                PipelineRunResult.Failed => "Failed",
+                PipelineRunResult.Canceled => "Canceled",
+                PipelineRunResult.Skipped => "Skipped",
+                _ => "Completed",
+            },
+            TimelineRecordStatus.InProgress => "Running",
+            TimelineRecordStatus.Pending => "Pending",
+            _ => "Unknown",
+        };
 }

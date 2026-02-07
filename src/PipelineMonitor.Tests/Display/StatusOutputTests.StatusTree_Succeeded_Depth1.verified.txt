@@ -1,0 +1,5 @@
+﻿Succeeded — 3/3 stages complete
+
+├─ Build (Succeeded) — Jobs: 2/2 complete
+├─ Test (Succeeded) — Jobs: 1/1 complete
+└─ Publish (Succeeded) — Jobs: 1/1 complete

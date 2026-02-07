@@ -1,0 +1,3 @@
+﻿Stages: 1 completed, 1 in progress, 1 pending
+Jobs: 1 completed, 1 in progress, 1 pending
+Elapsed: 45s. Next check in 10s...

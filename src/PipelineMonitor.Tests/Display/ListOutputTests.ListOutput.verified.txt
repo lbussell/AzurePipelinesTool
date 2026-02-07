@@ -1,0 +1,6 @@
+﻿| Name | ID | Definition |
+| ---- | -- | ---------- |
+| docker-tools-imagebuilder-official | 367 | eng\pipelines\dotnet-buildtools-image-builder-official.yml |
+| docker-tools-imagebuilder-unofficial | 1513 | eng\pipelines\dotnet-buildtools-image-builder-unofficial.yml |
+| push-common-updates | 630 | eng\pipelines\push-common-updates.yml |
+| dotnet-docker-tools-cg-detection | 964 | eng\pipelines\cg-detection.yml |
