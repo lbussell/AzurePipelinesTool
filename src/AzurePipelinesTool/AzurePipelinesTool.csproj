@@ -21,27 +21,19 @@
 
   <PropertyGroup Label="Package Metadata">
     <PackageId>LoganBussell.AzurePipelinesTool</PackageId>
+    <Description>CLI for interacting with Azure Pipelines</Description>
 
-    <!-- TODO: Add a short description of the package -->
-    <!-- <Description></Description> -->
-
+    <!-- TODO: Add README file -->
     <!-- <PackageReadmeFile></PackageReadmeFile> -->
-
     <!-- TODO: Add a package icon.
       Use a 128x128 PNG with transparent background. -->
     <!-- <PackageIcon></PackageIcon> -->
-
-    <!-- TODO: Add a link to your package's website, if it has one. -->
-    <!-- <PackageProjectUrl></PackageProjectUrl> -->
-
-    <!-- TODO: Add a link to your package's source code repository. -->
-    <!-- <RepositoryUrl>https://github.com/lbussell/dotnet-template-packages.git</RepositoryUrl> -->
-    <!-- Examples: git (default), tfs -->
-    <!-- <RepositoryType>git</RepositoryType> -->
-
+    <PackageProjectUrl>https://github.com/lbussell/AzurePipelinesTool</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/lbussell/AzurePipelinesTool.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <!-- TODO: Add tags to help users find your package in search results.
       This should be a semicolon-delimited list of tags. -->
-    <!-- <PackageTags></PackageTags> -->
+    <PackageTags>Azure Pipelines;Azure DevOps</PackageTags>
     <!-- <PackageReleaseNotes></PackageReleaseNotes> -->
   </PropertyGroup>
 

@@ -23,10 +23,10 @@ internal sealed class StatusCommand(
     private readonly BuildIdResolver _buildIdResolver = buildIdResolver;
 
     /// <summary>
-    /// Show the status of a pipeline run as a tree.
+    /// Show the status of a pipeline run.
     /// </summary>
     /// <param name="buildIdOrUrl">Build ID or Azure DevOps build results URL.</param>
-    /// <param name="depth">Tree nesting depth: 1=stages, 2=stages+jobs, 3=stages+jobs+tasks.</param>
+    /// <param name="depth">-d, Tree nesting depth: 1=stages, 2=stages+jobs, 3=stages+jobs+tasks.</param>
     [Command("status")]
     public async Task ExecuteAsync([Argument] string buildIdOrUrl, int depth = 2)
     {

@@ -59,11 +59,4 @@ consoleAppBuilder.Add<CancelCommand>();
 consoleAppBuilder.Add<WaitCommand>();
 consoleAppBuilder.Add<LogsCommand>();
 
-// In-development commands
-#if DEBUG
-consoleAppBuilder.Add<ParametersCommand>();
-consoleAppBuilder.Add<VariablesCommand>();
-consoleAppBuilder.Add<RunsCommand>();
-#endif
-
 await consoleAppBuilder.RunAsync(args);
