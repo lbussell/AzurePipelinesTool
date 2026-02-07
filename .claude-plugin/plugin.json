@@ -1,0 +1,11 @@
+{
+  "name": "azp",
+  "description": "Interact with Azure Pipelines from the terminal",
+  "version": "0.1.0",
+  "author": {
+    "name": "Logan Bussell"
+  },
+  "license": "MIT",
+  "keywords": ["azure", "pipelines", "devops", "ci", "cd"],
+  "skills": "../skills/"
+}
