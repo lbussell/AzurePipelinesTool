@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using AzurePipelinesTool.Display;
 using Microsoft.Extensions.Hosting;
 using NLog;
 using NLog.Targets;
-using AzurePipelinesTool.Display;
 
 namespace AzurePipelinesTool.Logging;
 

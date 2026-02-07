@@ -146,4 +146,10 @@ internal sealed record TimelineJobInfo(
     ImmutableList<TimelineTaskInfo> Tasks
 );
 
-internal sealed record TimelineTaskInfo(string Name, TimelineRecordStatus State, PipelineRunResult Result, int? Order, int? LogId);
+internal sealed record TimelineTaskInfo(
+    string Name,
+    TimelineRecordStatus State,
+    PipelineRunResult Result,
+    int? Order,
+    int? LogId
+);

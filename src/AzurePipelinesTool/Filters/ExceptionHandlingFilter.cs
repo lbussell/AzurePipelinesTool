@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using AzurePipelinesTool.Display;
 using ConsoleAppFramework;
 using Microsoft.Extensions.Logging;
-using AzurePipelinesTool.Display;
 using Spectre.Console;
 
 namespace AzurePipelinesTool.Filters;

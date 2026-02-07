@@ -10,8 +10,7 @@ namespace AzurePipelinesTool.Tests.Display;
 public class WaitOutputTests : VerifyBase
 {
     [TestMethod]
-    public void FormatElapsed_Seconds() =>
-        Assert.AreEqual("42s", WaitCommand.FormatElapsed(TimeSpan.FromSeconds(42)));
+    public void FormatElapsed_Seconds() => Assert.AreEqual("42s", WaitCommand.FormatElapsed(TimeSpan.FromSeconds(42)));
 
     [TestMethod]
     public void FormatElapsed_Minutes() =>
@@ -19,11 +18,13 @@ public class WaitOutputTests : VerifyBase
 
     [TestMethod]
     public void FormatElapsed_Hours() =>
-        Assert.AreEqual("2h 15m 10s", WaitCommand.FormatElapsed(TimeSpan.FromHours(2).Add(TimeSpan.FromMinutes(15).Add(TimeSpan.FromSeconds(10)))));
+        Assert.AreEqual(
+            "2h 15m 10s",
+            WaitCommand.FormatElapsed(TimeSpan.FromHours(2).Add(TimeSpan.FromMinutes(15).Add(TimeSpan.FromSeconds(10))))
+        );
 
     [TestMethod]
-    public void FormatElapsed_Zero() =>
-        Assert.AreEqual("0s", WaitCommand.FormatElapsed(TimeSpan.Zero));
+    public void FormatElapsed_Zero() => Assert.AreEqual("0s", WaitCommand.FormatElapsed(TimeSpan.Zero));
 
     [TestMethod]
     public void FormatElapsed_ExactlyOneMinute() =>
@@ -31,7 +32,13 @@ public class WaitOutputTests : VerifyBase
 
     [TestMethod]
     public Task WaitProgress_SucceededTimeline() =>
-        Verify(RenderWaitProgress(TestData.SucceededTimeline, buildId: 12345, TimeSpan.FromMinutes(3).Add(TimeSpan.FromSeconds(42))));
+        Verify(
+            RenderWaitProgress(
+                TestData.SucceededTimeline,
+                buildId: 12345,
+                TimeSpan.FromMinutes(3).Add(TimeSpan.FromSeconds(42))
+            )
+        );
 
     [TestMethod]
     public Task WaitProgress_InProgressTimeline() =>
@@ -95,10 +102,15 @@ public class WaitOutputTests : VerifyBase
     private static string GetOverallResult(BuildTimelineInfo timeline)
     {
         var results = timeline.Stages.Select(s => s.Result).ToList();
-        if (results.Any(r => r == PipelineRunResult.Failed)) return "Failed";
-        if (results.Any(r => r == PipelineRunResult.Canceled)) return "Canceled";
-        if (results.Any(r => r == PipelineRunResult.PartiallySucceeded)) return "Partially Succeeded";
-        return results.All(r => r is PipelineRunResult.Succeeded or PipelineRunResult.Skipped) ? "Succeeded" : "Completed";
+        if (results.Any(r => r == PipelineRunResult.Failed))
+            return "Failed";
+        if (results.Any(r => r == PipelineRunResult.Canceled))
+            return "Canceled";
+        if (results.Any(r => r == PipelineRunResult.PartiallySucceeded))
+            return "Partially Succeeded";
+        return results.All(r => r is PipelineRunResult.Succeeded or PipelineRunResult.Skipped)
+            ? "Succeeded"
+            : "Completed";
     }
 
     private static string GetStateLabel(TimelineRecordStatus state, PipelineRunResult result) =>

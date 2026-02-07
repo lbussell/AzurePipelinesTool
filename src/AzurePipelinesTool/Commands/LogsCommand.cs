@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using ConsoleAppFramework;
 using AzurePipelinesTool.AzureDevOps;
+using ConsoleAppFramework;
 using Spectre.Console;
 
 namespace AzurePipelinesTool.Commands;
@@ -31,7 +31,13 @@ internal sealed class LogsCommand(
     {
         var (org, project, buildId) = await _buildIdResolver.ResolveAsync(buildIdOrUrl);
 
-        await using var logStream = await _pipelinesService.GetBuildLogAsync(org, project, buildId, logId, cancellationToken);
+        await using var logStream = await _pipelinesService.GetBuildLogAsync(
+            org,
+            project,
+            buildId,
+            logId,
+            cancellationToken
+        );
 
         var fileName = $"build-{buildId}-log-{logId}.txt";
         var filePath = Path.Combine(Path.GetTempPath(), fileName);

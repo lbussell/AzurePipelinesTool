@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 using System.Diagnostics;
-using ConsoleAppFramework;
 using AzurePipelinesTool.AzureDevOps;
 using AzurePipelinesTool.Display;
+using ConsoleAppFramework;
 using Spectre.Console;
 
 namespace AzurePipelinesTool.Commands;
@@ -161,9 +161,7 @@ internal sealed class WaitCommand(
         };
 
     internal static string FormatElapsed(TimeSpan elapsed) =>
-        elapsed.TotalHours >= 1
-            ? $"{(int)elapsed.TotalHours}h {elapsed.Minutes}m {elapsed.Seconds}s"
-            : elapsed.TotalMinutes >= 1
-                ? $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s"
-                : $"{elapsed.Seconds}s";
+        elapsed.TotalHours >= 1 ? $"{(int)elapsed.TotalHours}h {elapsed.Minutes}m {elapsed.Seconds}s"
+        : elapsed.TotalMinutes >= 1 ? $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s"
+        : $"{elapsed.Seconds}s";
 }

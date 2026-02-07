@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 using System.Text.RegularExpressions;
+using AzurePipelinesTool.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
-using AzurePipelinesTool.Authentication;
 
 namespace AzurePipelinesTool.AzureDevOps;
 

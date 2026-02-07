@@ -1,17 +1,14 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using AzurePipelinesTool.AzureDevOps;
 using ConsoleAppFramework;
 using Markout;
-using AzurePipelinesTool.AzureDevOps;
 using Spectre.Console;
 
 namespace AzurePipelinesTool.Commands;
 
-internal sealed class ListCommand(
-    IAnsiConsole ansiConsole,
-    PipelinesService pipelinesService
-)
+internal sealed class ListCommand(IAnsiConsole ansiConsole, PipelinesService pipelinesService)
 {
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly PipelinesService _pipelinesService = pipelinesService;

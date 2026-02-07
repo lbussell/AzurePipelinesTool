@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using ConsoleAppFramework;
-using Markout;
 using AzurePipelinesTool.AzureDevOps;
 using AzurePipelinesTool.Display;
+using ConsoleAppFramework;
+using Markout;
 using Spectre.Console;
 using TreeNode = Markout.TreeNode;
 
@@ -57,9 +57,7 @@ internal sealed class StatusCommand(
 
     private static void WriteTimelineTree(MarkoutWriter writer, BuildTimelineInfo timeline, int depth)
     {
-        var stageNodes = timeline.Stages
-            .Select(stage => BuildStageNode(stage, depth))
-            .ToList();
+        var stageNodes = timeline.Stages.Select(stage => BuildStageNode(stage, depth)).ToList();
 
         writer.WriteTree(stageNodes);
     }
@@ -68,11 +66,10 @@ internal sealed class StatusCommand(
     {
         var completedJobs = stage.Jobs.Count(j => j.State == TimelineRecordStatus.Completed);
         var totalJobs = stage.Jobs.Count;
-        var label = $"{stage.Name} ({GetStateLabel(stage.State, stage.Result)}) — Jobs: {completedJobs}/{totalJobs} complete";
+        var label =
+            $"{stage.Name} ({GetStateLabel(stage.State, stage.Result)}) — Jobs: {completedJobs}/{totalJobs} complete";
 
-        List<TreeNode>? children = depth >= 2
-            ? stage.Jobs.Select(job => BuildJobNode(job, depth)).ToList()
-            : null;
+        List<TreeNode>? children = depth >= 2 ? stage.Jobs.Select(job => BuildJobNode(job, depth)).ToList() : null;
 
         return new TreeNode(label, children: children);
     }
@@ -81,9 +78,7 @@ internal sealed class StatusCommand(
     {
         var label = $"{job.Name} ({GetStateLabel(job.State, job.Result)})";
 
-        List<TreeNode>? children = depth >= 3
-            ? job.Tasks.Select(BuildTaskNode).ToList()
-            : null;
+        List<TreeNode>? children = depth >= 3 ? job.Tasks.Select(BuildTaskNode).ToList() : null;
 
         return new TreeNode(label, children: children);
     }

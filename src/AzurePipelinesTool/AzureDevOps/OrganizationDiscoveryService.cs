@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
+using AzurePipelinesTool.Authentication;
 using Microsoft.VisualStudio.Services.Account.Client;
 using Microsoft.VisualStudio.Services.Location.Client;
 using Microsoft.VisualStudio.Services.WebApi;
-using AzurePipelinesTool.Authentication;
 
 namespace AzurePipelinesTool.AzureDevOps;
 

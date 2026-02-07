@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using Microsoft.Extensions.Logging.Abstractions;
 using AzurePipelinesTool.AzureDevOps.Yaml;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AzurePipelinesTool.Tests.AzureDevOps.Yaml;
 

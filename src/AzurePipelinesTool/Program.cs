@@ -1,13 +1,6 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using ConsoleAppFramework;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
 using AzurePipelinesTool;
 using AzurePipelinesTool.Authentication;
 using AzurePipelinesTool.AzureDevOps;
@@ -17,6 +10,13 @@ using AzurePipelinesTool.Display;
 using AzurePipelinesTool.Filters;
 using AzurePipelinesTool.Git;
 using AzurePipelinesTool.Logging;
+using ConsoleAppFramework;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 using Spectre.Console;
 
 var builder = Host.CreateApplicationBuilder();

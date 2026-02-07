@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using ConsoleAppFramework;
-using Markout;
 using AzurePipelinesTool.AzureDevOps;
 using AzurePipelinesTool.AzureDevOps.Yaml;
 using AzurePipelinesTool.Display;
+using ConsoleAppFramework;
+using Markout;
 using Spectre.Console;
 
 namespace AzurePipelinesTool.Commands;

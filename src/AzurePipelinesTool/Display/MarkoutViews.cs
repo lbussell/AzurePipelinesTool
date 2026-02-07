@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 using System.Collections;
-using Markout;
 using AzurePipelinesTool.AzureDevOps;
 using AzurePipelinesTool.AzureDevOps.Yaml;
+using Markout;
 
 namespace AzurePipelinesTool.Display;
 
@@ -33,19 +33,15 @@ public sealed class PipelineInfoView
     public string Repository { get; init; } = "";
 
     [MarkoutIgnoreInTable]
-    public List<MarkoutField> Info =>
-    [
-        MarkoutField.Create("ID", Id),
-        MarkoutField.Create("Definition", RelativePath),
-    ];
+    public List<MarkoutField> Info => [MarkoutField.Create("ID", Id), MarkoutField.Create("Definition", RelativePath)];
 
     [MarkoutIgnoreInTable]
     public List<MarkoutField> Context =>
-    [
-        MarkoutField.Create("Organization", Organization),
-        MarkoutField.Create("Project", Project),
-        MarkoutField.Create("Repository", Repository),
-    ];
+        [
+            MarkoutField.Create("Organization", Organization),
+            MarkoutField.Create("Project", Project),
+            MarkoutField.Create("Repository", Repository),
+        ];
 
     [MarkoutSection(Name = "Variables")]
     public List<VariableRowView>? Variables { get; init; }
@@ -56,21 +52,19 @@ public sealed class PipelineInfoView
     internal static PipelineInfoView From(
         LocalPipelineInfo pipeline,
         IReadOnlyList<PipelineVariableInfo>? variables,
-        IReadOnlyList<PipelineParameter>? parameters) => new()
-    {
-        Name = pipeline.Name,
-        Id = pipeline.Id.Value,
-        RelativePath = pipeline.RelativePath,
-        Organization = pipeline.Organization.Name,
-        Project = pipeline.Project.Name,
-        Repository = pipeline.Repository.Name,
-        Variables = variables is { Count: > 0 }
-            ? variables.Select(VariableRowView.From).ToList()
-            : null,
-        Parameters = parameters is { Count: > 0 }
-            ? parameters.Select(ParameterRowView.From).ToList()
-            : null,
-    };
+        IReadOnlyList<PipelineParameter>? parameters
+    ) =>
+        new()
+        {
+            Name = pipeline.Name,
+            Id = pipeline.Id.Value,
+            RelativePath = pipeline.RelativePath,
+            Organization = pipeline.Organization.Name,
+            Project = pipeline.Project.Name,
+            Repository = pipeline.Repository.Name,
+            Variables = variables is { Count: > 0 } ? variables.Select(VariableRowView.From).ToList() : null,
+            Parameters = parameters is { Count: > 0 } ? parameters.Select(ParameterRowView.From).ToList() : null,
+        };
 }
 
 /// <summary>
@@ -88,13 +82,14 @@ public sealed class VariableRowView
     [MarkoutBoolFormat("yes", "no")]
     public bool Settable { get; init; }
 
-    internal static VariableRowView From(PipelineVariableInfo v) => new()
-    {
-        Name = v.Name,
-        Value = v.IsSecret ? "***" : v.Value,
-        Secret = v.IsSecret,
-        Settable = v.AllowOverride,
-    };
+    internal static VariableRowView From(PipelineVariableInfo v) =>
+        new()
+        {
+            Name = v.Name,
+            Value = v.IsSecret ? "***" : v.Value,
+            Secret = v.IsSecret,
+            Settable = v.AllowOverride,
+        };
 }
 
 /// <summary>
@@ -116,14 +111,15 @@ public sealed class ParameterRowView
     [MarkoutSkipDefault]
     public string? Values { get; init; }
 
-    internal static ParameterRowView From(PipelineParameter p) => new()
-    {
-        Name = p.Name,
-        Type = p.Type,
-        Default = p.Default is not null ? FormatValue(p.Default) : null,
-        DisplayName = p.DisplayName,
-        Values = p.Values is { Count: > 0 } ? string.Join(", ", p.Values) : null,
-    };
+    internal static ParameterRowView From(PipelineParameter p) =>
+        new()
+        {
+            Name = p.Name,
+            Type = p.Type,
+            Default = p.Default is not null ? FormatValue(p.Default) : null,
+            DisplayName = p.DisplayName,
+            Values = p.Values is { Count: > 0 } ? string.Join(", ", p.Values) : null,
+        };
 
     private static string FormatValue(object value) =>
         value switch

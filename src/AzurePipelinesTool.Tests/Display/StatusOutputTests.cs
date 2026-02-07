@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using Markout;
 using AzurePipelinesTool.AzureDevOps;
+using Markout;
 
 namespace AzurePipelinesTool.Tests.Display;
 
@@ -10,24 +10,19 @@ namespace AzurePipelinesTool.Tests.Display;
 public class StatusOutputTests : VerifyBase
 {
     [TestMethod]
-    public Task StatusTree_Succeeded_Depth2() =>
-        Verify(RenderStatusOutput(TestData.SucceededTimeline, depth: 2));
+    public Task StatusTree_Succeeded_Depth2() => Verify(RenderStatusOutput(TestData.SucceededTimeline, depth: 2));
 
     [TestMethod]
-    public Task StatusTree_Failed_Depth2() =>
-        Verify(RenderStatusOutput(TestData.FailedTimeline, depth: 2));
+    public Task StatusTree_Failed_Depth2() => Verify(RenderStatusOutput(TestData.FailedTimeline, depth: 2));
 
     [TestMethod]
-    public Task StatusTree_InProgress_Depth2() =>
-        Verify(RenderStatusOutput(TestData.InProgressTimeline, depth: 2));
+    public Task StatusTree_InProgress_Depth2() => Verify(RenderStatusOutput(TestData.InProgressTimeline, depth: 2));
 
     [TestMethod]
-    public Task StatusTree_Succeeded_Depth1() =>
-        Verify(RenderStatusOutput(TestData.SucceededTimeline, depth: 1));
+    public Task StatusTree_Succeeded_Depth1() => Verify(RenderStatusOutput(TestData.SucceededTimeline, depth: 1));
 
     [TestMethod]
-    public Task StatusTree_Succeeded_Depth3() =>
-        Verify(RenderStatusOutput(TestData.SucceededTimeline, depth: 3));
+    public Task StatusTree_Succeeded_Depth3() => Verify(RenderStatusOutput(TestData.SucceededTimeline, depth: 3));
 
     // ── helpers ─────────────────────────────────────────────────────────
 
@@ -42,15 +37,14 @@ public class StatusOutputTests : VerifyBase
 
         var completedStages = timeline.Stages.Count(s => s.State == TimelineRecordStatus.Completed);
         var totalStages = timeline.Stages.Count;
-        var overallState = timeline.Stages.Any(s => s.State == TimelineRecordStatus.InProgress) ? "Running"
+        var overallState =
+            timeline.Stages.Any(s => s.State == TimelineRecordStatus.InProgress) ? "Running"
             : timeline.Stages.All(s => s.State == TimelineRecordStatus.Completed) ? GetOverallResult(timeline)
             : "Pending";
 
         markout.WriteParagraph($"{overallState} — {completedStages}/{totalStages} stages complete");
 
-        var stageNodes = timeline.Stages
-            .Select(stage => BuildStageNode(stage, depth))
-            .ToList();
+        var stageNodes = timeline.Stages.Select(stage => BuildStageNode(stage, depth)).ToList();
         markout.WriteTree(stageNodes);
         markout.Flush();
 
@@ -60,21 +54,25 @@ public class StatusOutputTests : VerifyBase
     private static string GetOverallResult(BuildTimelineInfo timeline)
     {
         var results = timeline.Stages.Select(s => s.Result).ToList();
-        if (results.Any(r => r == PipelineRunResult.Failed)) return "Failed";
-        if (results.Any(r => r == PipelineRunResult.Canceled)) return "Canceled";
-        if (results.Any(r => r == PipelineRunResult.PartiallySucceeded)) return "Partially Succeeded";
-        return results.All(r => r is PipelineRunResult.Succeeded or PipelineRunResult.Skipped) ? "Succeeded" : "Completed";
+        if (results.Any(r => r == PipelineRunResult.Failed))
+            return "Failed";
+        if (results.Any(r => r == PipelineRunResult.Canceled))
+            return "Canceled";
+        if (results.Any(r => r == PipelineRunResult.PartiallySucceeded))
+            return "Partially Succeeded";
+        return results.All(r => r is PipelineRunResult.Succeeded or PipelineRunResult.Skipped)
+            ? "Succeeded"
+            : "Completed";
     }
 
     private static TreeNode BuildStageNode(TimelineStageInfo stage, int depth)
     {
         var completedJobs = stage.Jobs.Count(j => j.State == TimelineRecordStatus.Completed);
         var totalJobs = stage.Jobs.Count;
-        var label = $"{stage.Name} ({GetStateLabel(stage.State, stage.Result)}) — Jobs: {completedJobs}/{totalJobs} complete";
+        var label =
+            $"{stage.Name} ({GetStateLabel(stage.State, stage.Result)}) — Jobs: {completedJobs}/{totalJobs} complete";
 
-        List<TreeNode>? children = depth >= 2
-            ? stage.Jobs.Select(job => BuildJobNode(job, depth)).ToList()
-            : null;
+        List<TreeNode>? children = depth >= 2 ? stage.Jobs.Select(job => BuildJobNode(job, depth)).ToList() : null;
 
         return new TreeNode(label, children: children);
     }
@@ -83,9 +81,7 @@ public class StatusOutputTests : VerifyBase
     {
         var label = $"{job.Name} ({GetStateLabel(job.State, job.Result)})";
 
-        List<TreeNode>? children = depth >= 3
-            ? job.Tasks.Select(BuildTaskNode).ToList()
-            : null;
+        List<TreeNode>? children = depth >= 3 ? job.Tasks.Select(BuildTaskNode).ToList() : null;
 
         return new TreeNode(label, children: children);
     }

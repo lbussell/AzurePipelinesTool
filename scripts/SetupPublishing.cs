@@ -79,7 +79,9 @@ static async Task CreateEnvironmentAsync(string owner, string repo)
 {
     AnsiConsole.WriteLine();
     AnsiConsole.MarkupLine("[bold]Creating [green]production[/] GitHub environment[/]");
-    await GitHubCli.RunWithConfirmationAsync(["api", "--method", "PUT", $"repos/{owner}/{repo}/environments/production"]);
+    await GitHubCli.RunWithConfirmationAsync(
+        ["api", "--method", "PUT", $"repos/{owner}/{repo}/environments/production"]
+    );
     Prompt.Success("Environment [green]production[/] created.");
 }
 
@@ -91,7 +93,8 @@ static async Task SetNugetUserSecretAsync(string owner, string repo)
 
     await GitHubCli.RunWithConfirmationAsync(
         ["secret", "set", "NUGET_USER", "--env", "production", "--repo", $"{owner}/{repo}"],
-        stdinText: nugetUser);
+        stdinText: nugetUser
+    );
 
     Prompt.Success("Secret [green]NUGET_USER[/] set.");
 }
@@ -100,7 +103,9 @@ static async Task SetupTrustedPublishingAsync(string owner, string repo)
 {
     AnsiConsole.WriteLine();
     AnsiConsole.MarkupLine("[bold green]Next step:[/] set up Trusted Publishing on NuGet.org.");
-    AnsiConsole.MarkupLine("Go to [link]https://www.nuget.org/account/trustedpublishing[/] and add a new Trusted Publisher with:");
+    AnsiConsole.MarkupLine(
+        "Go to [link]https://www.nuget.org/account/trustedpublishing[/] and add a new Trusted Publisher with:"
+    );
     AnsiConsole.WriteLine();
     AnsiConsole.MarkupLine($"[bold]Policy Name:[/]      {Markup.Escape(repo)}");
     AnsiConsole.MarkupLine($"[bold]Repository Owner:[/] {Markup.Escape(owner)}");
@@ -113,8 +118,7 @@ internal static class Prompt
 {
     public static bool Confirm(string message) => AnsiConsole.Confirm(message);
 
-    public static string Ask(string message) =>
-        AnsiConsole.Prompt(new TextPrompt<string>(message).PromptStyle("blue"));
+    public static string Ask(string message) => AnsiConsole.Prompt(new TextPrompt<string>(message).PromptStyle("blue"));
 
     public static void Success(string message) => AnsiConsole.MarkupLine($"[green]✓[/] {message}");
 
@@ -129,8 +133,7 @@ internal static class GitHubCli
 
     public static async Task RunWithConfirmationAsync(string[] arguments, string? stdinText = null)
     {
-        var command = _gh.WithArguments(arguments)
-                         .WithValidation(CommandResultValidation.ZeroExitCode);
+        var command = _gh.WithArguments(arguments).WithValidation(CommandResultValidation.ZeroExitCode);
 
         var commandString = string.Join(' ', arguments);
 

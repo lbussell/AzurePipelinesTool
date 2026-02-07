@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using Microsoft.Extensions.Logging;
 using AzurePipelinesTool.Git;
+using Microsoft.Extensions.Logging;
 
 namespace AzurePipelinesTool.AzureDevOps;
 

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Logan Bussell
 // SPDX-License-Identifier: MIT
 
-using Markout;
 using AzurePipelinesTool.Display;
+using Markout;
 
 namespace AzurePipelinesTool.Tests.Display;
 
@@ -14,7 +14,8 @@ public class InfoOutputTests : VerifyBase
     {
         var output = MarkoutSerializer.Serialize(
             TestData.SamplePipelineInfoView,
-            AzurePipelinesToolMarkoutContext.Default);
+            AzurePipelinesToolMarkoutContext.Default
+        );
 
         return Verify(output);
     }
@@ -52,7 +53,9 @@ public class InfoOutputTests : VerifyBase
             Repository = "repo",
             Variables =
             [
-                VariableRowView.From(new PipelineVariableInfo("apiKey", "super-secret", IsSecret: true, AllowOverride: false)),
+                VariableRowView.From(
+                    new PipelineVariableInfo("apiKey", "super-secret", IsSecret: true, AllowOverride: false)
+                ),
             ],
         };
 
