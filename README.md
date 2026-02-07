@@ -79,33 +79,23 @@ azp cancel 12345
 | `-d 1\|2\|3` | Tree depth: 1=stages, 2=+jobs (default), 3=+tasks | `status` |
 | `-f` | Exit with non-zero code on failure/cancellation | `wait` |
 
-## AI Agent Integration
+## `azp` Agent Skill
 
-`azp` includes an agent skill so that AI coding assistants can use it to
-interact with Azure Pipelines on your behalf.
+This repo includes a skill which shows AI coding assistants how to use `azp` to
+develop Azure Pipelines on your behalf.
 
-### GitHub Copilot
+With the `azure-pipelines-tool` skill, agents can check pipeline syntax, queue
+pipeline runs, investigate failing pipelines, and even wait for runs to complete
+and react accordingly.
 
-Add the skill as a custom instruction in VS Code. Copy
-[`skills/azp/SKILL.md`](skills/azp/SKILL.md) to your workspace's
-`.github/instructions/` directory:
+### Install for GitHub Copilot CLI (Recommended)
 
 ```bash
-cp skills/azp/SKILL.md .github/instructions/azp.instructions.md
+/plugin marketplace add lbussell/AzurePipelinesTool
 ```
 
-### Claude Code
-
-Install the skill directly from this repository:
-
 ```bash
-claude mcp add-skill https://github.com/lbussell/AzurePipelinesTool
-```
-
-Or install from a local clone:
-
-```bash
-claude mcp add-skill /path/to/AzurePipelinesTool
+/plugin install azure-pipelines-tool@lbussell-azure-pipelines-tools
 ```
 
 ## Development

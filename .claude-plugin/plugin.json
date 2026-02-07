@@ -1,5 +1,5 @@
 {
-  "name": "azp",
+  "name": "azure-pipelines-tool",
   "description": "Interact with Azure Pipelines from the terminal",
   "version": "0.1.0",
   "author": {
