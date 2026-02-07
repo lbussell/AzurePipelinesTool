@@ -1,0 +1,8 @@
+﻿Failed — 3/3 stages complete
+
+├─ Build (Succeeded) — Jobs: 1/1 complete
+│  └─ Build linux-amd64 (Succeeded)
+├─ Test (Failed) — Jobs: 1/1 complete
+│  └─ Test linux-amd64 (Failed)
+└─ Publish (Skipped) — Jobs: 1/1 complete
+   └─ Publish images (Skipped)

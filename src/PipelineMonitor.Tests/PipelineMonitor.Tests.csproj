@@ -6,6 +6,7 @@
   <!-- Package versions are managed centrally in ../Directory.Packages.props. -->
   <ItemGroup>
     <PackageReference Include="MSTest" />
+    <PackageReference Include="Verify.MSTest" />
   </ItemGroup>
 
   <ItemGroup>

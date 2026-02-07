@@ -1,0 +1,21 @@
+﻿# docker-tools-imagebuilder-unofficial
+
+ID: 1513 | Definition: eng\pipelines\dotnet-buildtools-image-builder-unofficial.yml
+
+Organization: dnceng | Project: internal | Repository: dotnet-docker-tools
+
+## Variables
+
+| Name | Value | Secret | Settable |
+| ---- | ----- | ------ | -------- |
+| DisableDockerDetector | true | no | no |
+| imageBuilder.pathArgs |  | no | yes |
+| imageBuilder.queueArgs |  | no | yes |
+| stages | build;test;publish | no | yes |
+
+## Parameters
+
+| Name | Type | Default | Display Name | Values |
+| ---- | ---- | ------- | ------------ | ------ |
+| sourceBuildPipelineRunId | string | $(Build.BuildId) | Source build pipeline run ID. |  |
+| bootstrapImageBuilder | boolean | false | Build ImageBuilder from source. |  |

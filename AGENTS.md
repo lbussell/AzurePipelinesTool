@@ -56,7 +56,18 @@ Tests use MSTest with parallel execution at method level.
 
 **Test directories:**
 - `src/PipelineMonitor.Tests/AzureDevOps/Yaml/` - YAML parsing and parameter model tests
-- `src/PipelineMonitor.Tests/Display/` - Output formatting tests for CLI commands
+- `src/PipelineMonitor.Tests/Display/` - Output formatting snapshot tests
+
+**Snapshot testing (Verify):**
+Display tests use [Verify](https://github.com/VerifyTests/Verify) for snapshot testing.
+Each test captures the full rendered output and compares it against a committed `.verified.txt` file.
+DiffEngine is disabled — no diff tools will be launched.
+
+Workflow when output format changes:
+1. Run `dotnet test` — changed tests fail, `.received.txt` files are generated
+2. Review the `.received.txt` files to confirm the new output looks correct
+3. Accept snapshots: copy `.received.txt` to `.verified.txt` (e.g., `Copy-Item *.received.txt *.verified.txt`)
+4. Commit the updated `.verified.txt` files
 
 **Display test data (`src/PipelineMonitor.Tests/Display/TestData.cs`):**
 - Provides realistic sample data based on real command output from the docker-tools-imagebuilder-unofficial pipeline
@@ -64,7 +75,7 @@ Tests use MSTest with parallel execution at method level.
 - `SampleVariables` / `SampleParameters` — Pipeline variable and parameter data (from `info` command)
 - `SamplePipelineInfoView` — Pre-built Markout view model for the `info` command
 - `SucceededTimeline` / `FailedTimeline` / `InProgressTimeline` — `BuildTimelineInfo` with various stage states for `status`/`wait` command testing
-- When adding new commands, add corresponding sample data to `TestData.cs` and rendering tests to the `Display/` directory
+- When adding new commands, add corresponding sample data to `TestData.cs` and snapshot tests to the `Display/` directory
 
 ## Dependencies
 

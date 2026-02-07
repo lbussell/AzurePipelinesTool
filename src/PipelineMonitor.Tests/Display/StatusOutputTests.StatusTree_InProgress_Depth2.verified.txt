@@ -1,0 +1,8 @@
+﻿Running — 1/3 stages complete
+
+├─ Build (Succeeded) — Jobs: 1/1 complete
+│  └─ Build linux-amd64 (Succeeded)
+├─ Test (Running) — Jobs: 0/1 complete
+│  └─ Test linux-amd64 (Running)
+└─ Publish (Pending) — Jobs: 0/1 complete
+   └─ Publish images (Pending)

@@ -7,69 +7,20 @@ using PipelineMonitor.Display;
 namespace PipelineMonitor.Tests.Display;
 
 [TestClass]
-public class InfoOutputTests
+public class InfoOutputTests : VerifyBase
 {
     [TestMethod]
-    public void InfoOutput_ContainsPipelineName()
+    public Task InfoOutput_FullPipeline()
     {
         var output = MarkoutSerializer.Serialize(
             TestData.SamplePipelineInfoView,
             PipelineMonitorMarkoutContext.Default);
 
-        StringAssert.Contains(output, "docker-tools-imagebuilder-unofficial");
+        return Verify(output);
     }
 
     [TestMethod]
-    public void InfoOutput_ContainsIdAndDefinitionFields()
-    {
-        var output = MarkoutSerializer.Serialize(
-            TestData.SamplePipelineInfoView,
-            PipelineMonitorMarkoutContext.Default);
-
-        StringAssert.Contains(output, "1513");
-        StringAssert.Contains(output, @"eng\pipelines\dotnet-buildtools-image-builder-unofficial.yml");
-    }
-
-    [TestMethod]
-    public void InfoOutput_ContainsOrganizationContext()
-    {
-        var output = MarkoutSerializer.Serialize(
-            TestData.SamplePipelineInfoView,
-            PipelineMonitorMarkoutContext.Default);
-
-        StringAssert.Contains(output, "dnceng");
-        StringAssert.Contains(output, "internal");
-        StringAssert.Contains(output, "dotnet-docker-tools");
-    }
-
-    [TestMethod]
-    public void InfoOutput_ContainsVariablesSection()
-    {
-        var output = MarkoutSerializer.Serialize(
-            TestData.SamplePipelineInfoView,
-            PipelineMonitorMarkoutContext.Default);
-
-        StringAssert.Contains(output, "Variables");
-        StringAssert.Contains(output, "DisableDockerDetector");
-        StringAssert.Contains(output, "imageBuilder.pathArgs");
-        StringAssert.Contains(output, "stages");
-        StringAssert.Contains(output, "build;test;publish");
-    }
-
-    [TestMethod]
-    public void InfoOutput_ContainsParametersSection()
-    {
-        var output = MarkoutSerializer.Serialize(
-            TestData.SamplePipelineInfoView,
-            PipelineMonitorMarkoutContext.Default);
-
-        StringAssert.Contains(output, "Parameters");
-        StringAssert.Contains(output, "sourceBuildPipelineRunId");
-        StringAssert.Contains(output, "bootstrapImageBuilder");
-    }
-
-    [TestMethod]
-    public void InfoOutput_WithNoVariablesOrParameters_OmitsSections()
+    public Task InfoOutput_NoVariablesOrParameters()
     {
         var view = new PipelineInfoView
         {
@@ -85,13 +36,11 @@ public class InfoOutputTests
 
         var output = MarkoutSerializer.Serialize(view, PipelineMonitorMarkoutContext.Default);
 
-        StringAssert.Contains(output, "test-pipeline");
-        Assert.DoesNotContain(output, "Variables", "Empty variables section should be omitted");
-        Assert.DoesNotContain(output, "Parameters", "Empty parameters section should be omitted");
+        return Verify(output);
     }
 
     [TestMethod]
-    public void InfoOutput_SecretVariable_ShowsMaskedValue()
+    public Task InfoOutput_SecretVariable()
     {
         var view = new PipelineInfoView
         {
@@ -109,7 +58,6 @@ public class InfoOutputTests
 
         var output = MarkoutSerializer.Serialize(view, PipelineMonitorMarkoutContext.Default);
 
-        StringAssert.Contains(output, "***");
-        Assert.DoesNotContain(output, "super-secret", "Secret value should be masked");
+        return Verify(output);
     }
 }
