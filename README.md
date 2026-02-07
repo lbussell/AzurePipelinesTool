@@ -27,6 +27,13 @@ publishing to NuGet.org.
 
 ### Setting Up Trusted Publishing
 
+> [!TIP]
+> Steps 1-2 below can be automated by running:
+>
+> ```bash
+> dotnet run scripts/SetupPublishing.cs
+> ```
+
 1. **Create a [NuGet.org](https://www.nuget.org) account** if you don't already
     have one.
 2. **Create a new GitHub environment**:
