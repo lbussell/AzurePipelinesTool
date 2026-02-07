@@ -1,6 +1,6 @@
 ﻿# docker-tools-imagebuilder-unofficial
 
-ID: 1513 | Definition: eng\pipelines\dotnet-buildtools-image-builder-unofficial.yml
+ID: 1513 | Definition: eng/pipelines/dotnet-buildtools-image-builder-unofficial.yml
 
 Organization: dnceng | Project: internal | Repository: dotnet-docker-tools
 

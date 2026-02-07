@@ -26,7 +26,7 @@ public class InfoOutputTests : VerifyBase
         {
             Name = "test-pipeline",
             Id = 42,
-            RelativePath = @"eng\test.yml",
+            RelativePath = "eng/test.yml",
             Organization = "myorg",
             Project = "myproject",
             Repository = "myrepo",
@@ -46,7 +46,7 @@ public class InfoOutputTests : VerifyBase
         {
             Name = "secret-test",
             Id = 1,
-            RelativePath = @"eng\test.yml",
+            RelativePath = "eng/test.yml",
             Organization = "org",
             Project = "proj",
             Repository = "repo",

@@ -22,13 +22,13 @@ internal static class TestData
     public static IReadOnlyList<LocalPipelineInfo> SamplePipelines =>
     [
         CreatePipeline("docker-tools-imagebuilder-official", 367,
-            @"eng\pipelines\dotnet-buildtools-image-builder-official.yml"),
+            "eng/pipelines/dotnet-buildtools-image-builder-official.yml"),
         CreatePipeline("docker-tools-imagebuilder-unofficial", 1513,
-            @"eng\pipelines\dotnet-buildtools-image-builder-unofficial.yml"),
+            "eng/pipelines/dotnet-buildtools-image-builder-unofficial.yml"),
         CreatePipeline("push-common-updates", 630,
-            @"eng\pipelines\push-common-updates.yml"),
+            "eng/pipelines/push-common-updates.yml"),
         CreatePipeline("dotnet-docker-tools-cg-detection", 964,
-            @"eng\pipelines\cg-detection.yml"),
+            "eng/pipelines/cg-detection.yml"),
     ];
 
     // ── info command data ──────────────────────────────────────────────
@@ -72,7 +72,7 @@ internal static class TestData
     {
         Name = "docker-tools-imagebuilder-unofficial",
         Id = 1513,
-        RelativePath = @"eng\pipelines\dotnet-buildtools-image-builder-unofficial.yml",
+        RelativePath = "eng/pipelines/dotnet-buildtools-image-builder-unofficial.yml",
         Organization = "dnceng",
         Project = "internal",
         Repository = "dotnet-docker-tools",

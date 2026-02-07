@@ -62,7 +62,8 @@ internal sealed class PipelinesService(
             // Path.Join vs. Path.Combine: YamlProcess.YamlFilename has a leading
             // slash, which causes Path.Combine to ignore the first argument.
             var pipelineFilePath = Path.Join(repoRoot ?? Environment.CurrentDirectory, yamlBuildProcess.YamlFilename);
-            var relativePath = Path.GetRelativePath(Environment.CurrentDirectory, pipelineFilePath);
+            var relativePath = Path.GetRelativePath(Environment.CurrentDirectory, pipelineFilePath)
+                .Replace('\\', '/');
 
             yield return new LocalPipelineInfo(
                 Name: buildDefinition.Name,
