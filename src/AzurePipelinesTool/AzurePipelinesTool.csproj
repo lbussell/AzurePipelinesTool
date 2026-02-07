@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Metadata">
-    <PackageId>LoganBussell.AzurePipelinesTool</PackageId>
+    <PackageId>azp</PackageId>
     <Description>CLI for interacting with Azure Pipelines</Description>
 
     <!-- TODO: Add README file -->
