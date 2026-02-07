@@ -12,7 +12,7 @@
   <PropertyGroup Label="Tool Configuration">
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>pipelinemon</ToolCommandName>
+    <ToolCommandName>azp</ToolCommandName>
   </PropertyGroup>
 
   <PropertyGroup Label="Build Properties">

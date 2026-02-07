@@ -25,7 +25,7 @@ PipelineMonitor is a .NET CLI tool for discovering and monitoring Azure DevOps p
 - `parameters <definitionPath>` - Show pipeline parameters from YAML
 - `runs <definitionPath>` - Show recent pipeline runs
 
-**Global tool command:** `pipelinemon`
+**Global tool command:** `azp`
 
 ## Architecture
 
