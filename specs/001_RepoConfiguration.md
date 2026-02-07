@@ -1,4 +1,4 @@
-# PipelineMonitor Spec #001: Repo Configuration
+# AzurePipelinesTool Spec #001: Repo Configuration
 
 - JSON file in $repoRoot/.pipelines/config.json
 - OR $repoRoot/.pipelines.json

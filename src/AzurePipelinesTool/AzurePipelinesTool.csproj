@@ -1,0 +1,111 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- NuGet Package authoring best practices:
+    https://learn.microsoft.com/en-us/nuget/create-packages/package-authoring-best-practices -->
+
+  <!-- .NET Tool creation guide:
+    https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools-how-to-create -->
+
+  <!-- TargetFramework and other common properties are inherited from
+    ../Directory.Build.props and shared by all projects. -->
+
+  <PropertyGroup Label="Tool Configuration">
+    <OutputType>Exe</OutputType>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>azp</ToolCommandName>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Build Properties">
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package Metadata">
+    <PackageId>LoganBussell.AzurePipelinesTool</PackageId>
+
+    <!-- TODO: Add a short description of the package -->
+    <!-- <Description></Description> -->
+
+    <!-- <PackageReadmeFile></PackageReadmeFile> -->
+
+    <!-- TODO: Add a package icon.
+      Use a 128x128 PNG with transparent background. -->
+    <!-- <PackageIcon></PackageIcon> -->
+
+    <!-- TODO: Add a link to your package's website, if it has one. -->
+    <!-- <PackageProjectUrl></PackageProjectUrl> -->
+
+    <!-- TODO: Add a link to your package's source code repository. -->
+    <!-- <RepositoryUrl>https://github.com/lbussell/dotnet-template-packages.git</RepositoryUrl> -->
+    <!-- Examples: git (default), tfs -->
+    <!-- <RepositoryType>git</RepositoryType> -->
+
+    <!-- TODO: Add tags to help users find your package in search results.
+      This should be a semicolon-delimited list of tags. -->
+    <!-- <PackageTags></PackageTags> -->
+    <!-- <PackageReleaseNotes></PackageReleaseNotes> -->
+  </PropertyGroup>
+
+  <PropertyGroup Label="Versioning">
+    <!-- Update these version numbers manually. -->
+    <!-- Follow https://semver.org/spec/v2.0.0.html -->
+    <MajorVersion>0</MajorVersion>
+    <MinorVersion>1</MinorVersion>
+    <PatchVersion>0</PatchVersion>
+
+    <!-- Build date in format YYYY.M.D (no leading zeros for SemVer compliance) -->
+    <BuildDate>$([System.DateTime]::Now.ToString("yyyy.M.d"))</BuildDate>
+
+    <!-- Pre-release versioning label -->
+    <!-- This should stay the same throughout a given release cycle, or
+         preferably for the entire life of the package. -->
+    <!-- Other options might be: "alpha", "beta", "pre", etc. -->
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+
+    <!-- Set this to true to create a stable release version -->
+    <StableVersion>false</StableVersion>
+
+    <!-- Example CI/preview build version: 1.2.4-preview.202X.12.19 -->
+    <!-- Example stable release version: 1.2.4 (pass -p:StableVersion=true) -->
+    <PackageVersion Condition="'$(StableVersion)' == 'true'">
+      $(MajorVersion).$(MinorVersion).$(PatchVersion)
+    </PackageVersion>
+    <PackageVersion Condition="'$(StableVersion)' != 'true'">
+      $(MajorVersion).$(MinorVersion).$(PatchVersion)-$(PreReleaseVersionLabel).$(BuildDate)
+    </PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Licensing">
+    <Authors>Logan Bussell</Authors>
+    <Copyright>Copyright (c) 2026 $(Authors)</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup Label="Test Access">
+    <InternalsVisibleTo Include="AzurePipelinesTool.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="CliWrap" />
+    <PackageReference Include="ConsoleAppFramework" />
+    <PackageReference Include="Markout" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.Client" />
+    <PackageReference Include="NLog.Extensions.Hosting" />
+    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Xdg.Directories" />
+    <PackageReference Include="YamlDotNet" />
+    <!-- System.Data.SqlClient is a transitive dependency from Microsoft.TeamFoundationServer.Client.
+         This direct reference overrides version 4.8.5 to fix CVE-2024-0056 (GHSA-98g6-xh36-x2p7),
+         a high-severity vulnerability allowing encryption bypass on SQL Server connections. -->
+    <PackageReference Include="System.Data.SqlClient" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

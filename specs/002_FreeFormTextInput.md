@@ -1,4 +1,4 @@
-# PipelineMonitor Spec #002: Free-Form Text Input
+# AzurePipelinesTool Spec #002: Free-Form Text Input
 
 In InteractionService, something like this:
 

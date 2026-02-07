@@ -1,4 +1,4 @@
-# PipelineMonitor
+# AzurePipelinesTool
 
 ## Getting Started
 
@@ -36,7 +36,7 @@ dotnet run scripts/SetupPublishing.cs
 ### Updating Package Version Numbers
 
 Version numbers are controlled in
-[`PipelineMonitor.csproj`](`./src/PipelineMonitor/PipelineMonitor.csproj`). This template
+[`AzurePipelinesTool.csproj`](`./src/AzurePipelinesTool/AzurePipelinesTool.csproj`). This template
 starts with the version number `0.1.0`. I recommend that you follow [Semantic
 Versioning](https://semver.org/). In practice, that means doing the following:
 

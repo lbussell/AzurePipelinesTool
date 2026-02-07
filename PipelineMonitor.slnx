@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="src/PipelineMonitor/PipelineMonitor.csproj" />
-  <Project Path="src/PipelineMonitor.Tests/PipelineMonitor.Tests.csproj" />
-</Solution>

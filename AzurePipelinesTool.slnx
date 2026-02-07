@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/AzurePipelinesTool/AzurePipelinesTool.csproj" />
+  <Project Path="src/AzurePipelinesTool.Tests/AzurePipelinesTool.Tests.csproj" />
+</Solution>

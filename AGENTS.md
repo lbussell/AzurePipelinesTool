@@ -17,7 +17,7 @@ dotnet test --filter "FullyQualifiedName~TestMethodName"
 
 ## Project Overview
 
-PipelineMonitor is a .NET CLI tool for discovering and monitoring Azure DevOps pipelines from the command line. It auto-detects Azure DevOps organization/project/repository from local Git remotes.
+AzurePipelinesTool is a .NET CLI tool for discovering and monitoring Azure DevOps pipelines from the command line. It auto-detects Azure DevOps organization/project/repository from local Git remotes.
 
 **CLI Commands** (defined in `Program.cs` as the `App` class):
 - `list` (alias: `ls`) - List all local pipelines
@@ -45,18 +45,18 @@ Service Layer:
 ```
 
 **Key Directories:**
-- `src/PipelineMonitor/Authentication/` - Azure credential and connection management
-- `src/PipelineMonitor/AzureDevOps/` - Azure DevOps API integration
-- `src/PipelineMonitor/AzureDevOps/Yaml/` - Pipeline YAML parsing
-- `src/PipelineMonitor/Git/` - Git integration via CliWrap
+- `src/AzurePipelinesTool/Authentication/` - Azure credential and connection management
+- `src/AzurePipelinesTool/AzureDevOps/` - Azure DevOps API integration
+- `src/AzurePipelinesTool/AzureDevOps/Yaml/` - Pipeline YAML parsing
+- `src/AzurePipelinesTool/Git/` - Git integration via CliWrap
 
 ## Testing
 
 Tests use MSTest with parallel execution at method level.
 
 **Test directories:**
-- `src/PipelineMonitor.Tests/AzureDevOps/Yaml/` - YAML parsing and parameter model tests
-- `src/PipelineMonitor.Tests/Display/` - Output formatting snapshot tests
+- `src/AzurePipelinesTool.Tests/AzureDevOps/Yaml/` - YAML parsing and parameter model tests
+- `src/AzurePipelinesTool.Tests/Display/` - Output formatting snapshot tests
 
 **Snapshot testing (Verify):**
 Display tests use [Verify](https://github.com/VerifyTests/Verify) for snapshot testing.
@@ -69,7 +69,7 @@ Workflow when output format changes:
 3. Accept snapshots: copy `.received.txt` to `.verified.txt` (e.g., `Copy-Item *.received.txt *.verified.txt`)
 4. Commit the updated `.verified.txt` files
 
-**Display test data (`src/PipelineMonitor.Tests/Display/TestData.cs`):**
+**Display test data (`src/AzurePipelinesTool.Tests/Display/TestData.cs`):**
 - Provides realistic sample data based on real command output from the docker-tools-imagebuilder-unofficial pipeline
 - `SamplePipelines` — `LocalPipelineInfo` list (from `list` command)
 - `SampleVariables` / `SampleParameters` — Pipeline variable and parameter data (from `info` command)
