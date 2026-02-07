@@ -52,7 +52,19 @@ Service Layer:
 
 ## Testing
 
-Tests are in`src/PipelineMonitor.Tests/AzureDevOps/Yaml/` and use MSTest with parallel execution at method level.
+Tests use MSTest with parallel execution at method level.
+
+**Test directories:**
+- `src/PipelineMonitor.Tests/AzureDevOps/Yaml/` - YAML parsing and parameter model tests
+- `src/PipelineMonitor.Tests/Display/` - Output formatting tests for CLI commands
+
+**Display test data (`src/PipelineMonitor.Tests/Display/TestData.cs`):**
+- Provides realistic sample data based on real command output from the docker-tools-imagebuilder-unofficial pipeline
+- `SamplePipelines` — `LocalPipelineInfo` list (from `list` command)
+- `SampleVariables` / `SampleParameters` — Pipeline variable and parameter data (from `info` command)
+- `SamplePipelineInfoView` — Pre-built Markout view model for the `info` command
+- `SucceededTimeline` / `FailedTimeline` / `InProgressTimeline` — `BuildTimelineInfo` with various stage states for `status`/`wait` command testing
+- When adding new commands, add corresponding sample data to `TestData.cs` and rendering tests to the `Display/` directory
 
 ## Dependencies
 
