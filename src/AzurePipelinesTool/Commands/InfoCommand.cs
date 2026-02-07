@@ -22,6 +22,10 @@ internal sealed class InfoCommand(
     private readonly PipelinesService _pipelinesService = pipelinesService;
     private readonly PipelineYamlService _pipelineYamlService = pipelineYamlService;
 
+    /// <summary>
+    /// Show detailed information about a pipeline, including variables and parameters.
+    /// </summary>
+    /// <param name="definitionPath">Relative path to the pipeline YAML file.</param>
     [Command("info")]
     public async Task ExecuteAsync([Argument] string definitionPath)
     {

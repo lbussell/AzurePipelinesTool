@@ -27,7 +27,7 @@ internal sealed class RunCommand(
     private readonly GitService _gitService = gitService;
 
     /// <summary>
-    /// Preview-expand a pipeline's YAML by calling the Azure DevOps Preview API.
+    /// Render a pipeline's YAML by expanding template parameters.
     /// </summary>
     /// <param name="definitionPath">Relative path to the pipeline YAML file.</param>
     /// <param name="parameter">-p, Template parameters as key=value pairs.</param>

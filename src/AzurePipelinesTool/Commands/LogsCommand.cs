@@ -21,7 +21,7 @@ internal sealed class LogsCommand(
     /// Download logs for a specific task from a pipeline run.
     /// </summary>
     /// <param name="buildIdOrUrl">Build ID or Azure DevOps build results URL.</param>
-    /// <param name="logId">Log ID (shown in status output).</param>
+    /// <param name="logId">Log ID of the task to download logs for. Shown in `status --depth 3` output.</param>
     [Command("logs")]
     public async Task ExecuteAsync(
         [Argument] string buildIdOrUrl,

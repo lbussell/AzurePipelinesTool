@@ -16,6 +16,9 @@ internal sealed class ListCommand(
     private readonly IAnsiConsole _ansiConsole = ansiConsole;
     private readonly PipelinesService _pipelinesService = pipelinesService;
 
+    /// <summary>
+    /// List all pipelines associated with the current repository.
+    /// </summary>
     [Command("list|ls")]
     public async Task ExecuteAsync()
     {
