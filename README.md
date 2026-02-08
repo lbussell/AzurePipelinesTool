@@ -2,10 +2,18 @@
 
 A CLI for interacting with Azure Pipelines from the terminal.
 
-## Installation
+## Quick Start
+
+Install the tool globally:
 
 ```bash
 dotnet tool install -g azp
+```
+
+Install agent skill (interactive):
+
+```bash
+dnx azp -y -- install-skill
 ```
 
 ### Requirements
@@ -26,6 +34,8 @@ dotnet tool install -g azp
 | `azp cancel <id>` | Cancel a running pipeline build |
 | `azp wait <id>` | Poll until a run completes, with optional failure exit code |
 | `azp logs <id> <logId>` | Download logs for a specific task from a run |
+| `azp llmstxt` | Print comprehensive tool documentation |
+| `azp install-skill` | Install the agent skill to a local or user directory |
 
 `<path>` is a relative path to the pipeline YAML file.
 `<id>` is a numeric build ID or a full Azure DevOps build results URL.
@@ -81,14 +91,20 @@ azp cancel 12345
 
 ## `azp` Agent Skill
 
-This repo includes a skill which shows AI coding assistants how to use `azp` to
-develop Azure Pipelines on your behalf.
+This repo includes a skill which shows AI coding assistants how to use `azp` to develop Azure Pipelines on your behalf.
+With the `azure-pipelines-tool` skill, agents can check pipeline syntax, queue pipeline runs, investigate failing pipelines, and even wait for runs to complete and react accordingly.
 
-With the `azure-pipelines-tool` skill, agents can check pipeline syntax, queue
-pipeline runs, investigate failing pipelines, and even wait for runs to complete
-and react accordingly.
+### Easy install with `azp install-skill`
 
-### Install for GitHub Copilot CLI (Recommended)
+```bash
+dnx azp -y -- install-skill
+```
+
+The interactive installer lets you choose the target agent (GitHub Copilot, Claude Code, Gemini, or agent-agnostic) and whether to install locally or to your user directory.
+
+### Install via plugin marketplace
+
+#### GitHub Copilot CLI (Recommended)
 
 ```bash
 /plugin marketplace add lbussell/AzurePipelinesTool
@@ -98,10 +114,11 @@ and react accordingly.
 /plugin install azure-pipelines-tool@lbussell-azure-pipelines-tools
 ```
 
+The plugin marketplace is also compatible with Claude Code.
+
 ## Development
 
-See [docs/development/](docs/development/) for build, test, and publishing
-instructions.
+See [docs/development/](docs/development/) for build, test, and publishing instructions.
 
 ## License
 

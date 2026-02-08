@@ -27,7 +27,7 @@ dotnet run --project src/AzurePipelinesTool -- <command> [args]
 
 **Key layers**:
 
-- **Commands** (`Commands/`): Each CLI command is a class with a `[Command]` attribute. Commands are registered in `Program.cs`. Available commands: `list`, `info`, `run`, `check`, `status`, `cancel`, `wait`, `logs`.
+- **Commands** (`Commands/`): Each CLI command is a class with a `[Command]` attribute. Commands are registered in `Program.cs`. Available commands: `list`, `info`, `run`, `status`, `cancel`, `wait`, `logs`, `llmstxt`, `install-skill`.
 - **AzureDevOps** (`AzureDevOps/`): Service layer wrapping the Azure DevOps SDK (`Microsoft.TeamFoundationServer.Client`). `PipelinesService` is the main entry point for all API calls. `RepoInfoResolver` detects org/project/repo from git remotes.
 - **Git** (`Git/`): `GitService` wraps git CLI calls via `IProcessRunner`/`CliWrap`. Used to detect the current repo, branch, remote URLs, and working tree status.
 - **Display** (`Display/`): Console output using Spectre.Console and [Markout](https://github.com/lbussell/Markout) for structured rendering (tables, trees).

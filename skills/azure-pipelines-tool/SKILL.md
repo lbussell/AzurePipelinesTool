@@ -88,6 +88,8 @@ dnx azp -y -- cancel 12345
 | `cancel <id>` | Cancel a running pipeline build |
 | `wait <id>` | Poll until a run completes, with optional failure exit code |
 | `logs <id> <logId>` | Download logs for a specific task from a run |
+| `llmstxt` | Print comprehensive tool documentation |
+| `install-skill` | Install the agent skill to a local or user directory |
 
 `<path>` is a relative path to the pipeline YAML file.
 `<id>` is a numeric build ID or a full Azure DevOps build results URL.
