@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Agent skills for working with Azure Pipelines",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
     {
       "name": "azure-pipelines-tool",
       "source": "./",
       "description": "Interact with Azure Pipelines from the terminal",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "strict": false,
       "skills": ["./skills/azp"]
     }
