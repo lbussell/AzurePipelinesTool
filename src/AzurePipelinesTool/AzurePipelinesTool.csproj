@@ -41,7 +41,7 @@
     <!-- Follow https://semver.org/spec/v2.0.0.html -->
     <!-- Also update version in .claude-plugin/plugin.json and .claude-plugin/marketplace.json -->
     <MajorVersion>0</MajorVersion>
-    <MinorVersion>3</MinorVersion>
+    <MinorVersion>4</MinorVersion>
     <PatchVersion>0</PatchVersion>
 
     <!-- Build date in format YYYY.M.D (no leading zeros for SemVer compliance) -->
