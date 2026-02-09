@@ -10,6 +10,7 @@ namespace AzurePipelinesTool.Commands;
 internal sealed class InstallSkillCommand(IAnsiConsole ansiConsole)
 {
     private const string SkillFileName = "SKILL.md";
+    private const string SkillDirectoryName = "azure-pipelines-tool";
 
     private static readonly Location CustomLocation = new("Custom", "");
 
@@ -81,7 +82,7 @@ internal sealed class InstallSkillCommand(IAnsiConsole ansiConsole)
         {
             var prompt = new TextPrompt<string>(locationPrompt);
             var customDir = await _ansiConsole.PromptAsync(prompt, cancellationToken);
-            var result = Path.Combine(customDir, "azure-pipelines-tool");
+            var result = Path.Combine(customDir, SkillDirectoryName);
             _ansiConsole.MarkupLineInterpolated($"Installing to {result}[/]");
             return result;
         }
@@ -135,6 +136,6 @@ internal sealed class InstallSkillCommand(IAnsiConsole ansiConsole)
     {
         private bool IsLocal => Location == Locations[0];
         public string SkillsDir => Path.Combine(IsLocal ? Agent.LocalPrefix : Agent.UserPrefix, "skills");
-        public string FullPath => Path.Combine(Location.BaseDir, SkillsDir, "azure-pipelines-tool");
+        public string FullPath => Path.Combine(Location.BaseDir, SkillsDir, SkillDirectoryName);
     }
 }
