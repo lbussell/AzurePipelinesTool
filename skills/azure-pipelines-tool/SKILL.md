@@ -40,10 +40,10 @@ dnx azp -y -- list
 dnx azp -y -- info path/to/pipeline.yml
 
 # 3. Validate YAML expansion with template parameters (dry run, no queue)
-dnx azp -y -- check path/to/pipeline.yml -p env=staging
+dnx azp -y -- check path/to/pipeline.yml --parameters env=staging
 
-# 4. Queue the run (prints build URL and ID)
-dnx azp -y -- run path/to/pipeline.yml -p env=staging --var imageTag=latest
+# 4. Queue the run with multiple parameters, variables, and stage skips
+dnx azp -y -- run path/to/pipeline.yml --parameters env=staging,imageTag=latest --variables tag=v1,debug=true -s Deploy,Cleanup
 
 # 5. Wait for completion using the build ID from step 4
 dnx azp -y -- wait 12345 -f
@@ -70,9 +70,9 @@ dnx azp -y -- cancel 12345
 
 | Flag | Purpose | Commands |
 | ---- | ------- | -------- |
-| `-p key=value` | Template parameter override | `check`, `run` |
-| `--var key=value` | Pipeline variable override (must be settable at queue time) | `run` |
-| `-s`/`--skip` | Stage names to skip | `run` |
+| `--parameters k=v[,k=v,...]` | Template parameter overrides (comma-separated) | `check`, `run` |
+| `--variables k=v[,k=v,...]` | Pipeline variable overrides (comma-separated; must be settable at queue time) | `run` |
+| `-s`/`--skip stage[,stage,...]` | Stage names to skip (comma-separated) | `run` |
 | `-d 1\|2\|3` | Tree depth: 1=stages, 2=+jobs (default), 3=+tasks | `status` |
 | `-f` | Exit with non-zero code on failure/cancellation | `wait` |
 

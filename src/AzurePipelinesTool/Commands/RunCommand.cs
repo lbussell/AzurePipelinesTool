@@ -30,15 +30,15 @@ internal sealed class RunCommand(
     /// Render a pipeline's YAML by expanding template parameters.
     /// </summary>
     /// <param name="definitionPath">Relative path to the pipeline YAML file.</param>
-    /// <param name="parameter">-p, Template parameters as key=value pairs.</param>
+    /// <param name="parameters">Template parameters as comma-separated key=value pairs (e.g. env=staging,imageTag=latest).</param>
     [Command("check")]
-    public async Task ExecuteAsync([Argument] string definitionPath, string[]? parameter = null)
+    public async Task ExecuteAsync([Argument] string definitionPath, string[]? parameters = null)
     {
         var pipeline = await _pipelineResolver.GetLocalPipelineAsync(definitionPath);
 
         await EnsureGitInSyncAsync();
 
-        var templateParameters = ParseKeyValuePairs(parameter ?? [], "parameter");
+        var templateParameters = ParseKeyValuePairs(parameters ?? [], "parameter");
 
         await ValidateParametersAsync(pipeline, templateParameters);
 
@@ -71,14 +71,14 @@ internal sealed class RunCommand(
     /// Queue a pipeline run on Azure DevOps.
     /// </summary>
     /// <param name="definitionPath">Relative path to the pipeline YAML file.</param>
-    /// <param name="parameter">-p, Template parameters as key=value pairs.</param>
-    /// <param name="variable">--var, Pipeline variable overrides as key=value pairs.</param>
-    /// <param name="skipStage">-s|--skip, Stage names to skip.</param>
+    /// <param name="parameters">Template parameters as comma-separated key=value pairs (e.g. env=staging,imageTag=latest).</param>
+    /// <param name="variables">Pipeline variable overrides as comma-separated key=value pairs (e.g. tag=v1,debug=true).</param>
+    /// <param name="skipStage">-s|--skip, Stage names to skip (comma-separated).</param>
     [Command("run")]
     public async Task RunAsync(
         [Argument] string definitionPath,
-        string[]? parameter = null,
-        string[]? variable = null,
+        string[]? parameters = null,
+        string[]? variables = null,
         string[]? skipStage = null
     )
     {
@@ -86,11 +86,11 @@ internal sealed class RunCommand(
 
         await EnsureGitInSyncAsync();
 
-        var templateParameters = ParseKeyValuePairs(parameter ?? [], "parameter");
-        var variables = ParseKeyValuePairs(variable ?? [], "variable");
+        var templateParameters = ParseKeyValuePairs(parameters ?? [], "parameter");
+        var parsedVariables = ParseKeyValuePairs(variables ?? [], "variable");
 
         await ValidateParametersAsync(pipeline, templateParameters);
-        await ValidateVariablesAsync(pipeline, variables);
+        await ValidateVariablesAsync(pipeline, parsedVariables);
 
         var branch = await _gitService.GetCurrentBranchAsync();
         var refName = branch is not null ? $"refs/heads/{branch}" : null;
@@ -104,7 +104,7 @@ internal sealed class RunCommand(
                 pipeline,
                 refName,
                 templateParameters,
-                variables,
+                parsedVariables,
                 skipStage
             );
         }
