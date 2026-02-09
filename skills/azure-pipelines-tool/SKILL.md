@@ -1,9 +1,9 @@
 ---
-name: azp
+name: azure-pipelines-cli
 description: Interact with Azure Pipelines from the terminal. Use when you need to list pipelines, inspect definitions, validate YAML, queue runs, monitor status, or download logs. Run from within a Git repo that has Azure DevOps pipelines.
 ---
 
-# azp
+# azure-pipelines-cli
 
 A CLI tool for interacting with Azure Pipelines.
 
