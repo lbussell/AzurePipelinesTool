@@ -26,8 +26,8 @@ dnx azp -y -- install-skill
 ### Requirements
 
 - [.NET 10+ SDK](https://dotnet.microsoft.com/download)
-- Authenticated via [`azd auth login`](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference#azd-auth-login)
-- Run from within a Git repo whose remote points to Azure DevOps
+- [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
+- Authenticate with [`azd auth login`](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference#azd-auth-login)
 
 ## Quick Reference
 
@@ -46,6 +46,10 @@ dnx azp -y -- install-skill
 
 `<path>` is a relative path to the pipeline YAML file.
 `<id>` is a numeric build ID or a full Azure DevOps build results URL.
+
+> [!NOTE]
+> Commands requiring the `path` argument require you to run `azp` from within a Git repo that has a remote pointing to Azure DevOps.
+> `azp` uses your git remotes to infer Azure DevOps organization, project, and repo context to find pipelines associated with your repo.
 
 ## Usage
 
