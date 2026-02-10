@@ -9,14 +9,12 @@ using AzurePipelinesTool.Commands;
 using AzurePipelinesTool.Display;
 using AzurePipelinesTool.Filters;
 using AzurePipelinesTool.Git;
-using AzurePipelinesTool.Logging;
 using ConsoleAppFramework;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
 using Spectre.Console;
 
 var builder = Host.CreateApplicationBuilder();
@@ -39,14 +37,17 @@ builder.Services.TryAddSingleton<PipelineYamlService>();
 builder.Services.TryAddSingleton<PipelineResolver>();
 builder.Services.TryAddSingleton<BuildIdResolver>();
 
-// Add file logging
+// Configure console logging with verbosity controlled by AZP_DEBUG and AZP_TRACE env vars
 builder.Logging.ClearProviders();
-builder.Logging.AddNLog(builder.Configuration);
 
-// Print log file location during development
-#if DEBUG
-builder.Services.AddHostedService<LogLocationService>();
-#endif
+var minLevel = Environment.GetEnvironmentVariable("AZP_TRACE") is "1"
+    ? LogLevel.Trace
+    : Environment.GetEnvironmentVariable("AZP_DEBUG") is "1"
+        ? LogLevel.Debug
+        : LogLevel.Warning;
+
+builder.Logging.SetMinimumLevel(minLevel);
+builder.Logging.AddConsole();
 
 var consoleAppBuilder = builder.ToConsoleAppBuilder();
 consoleAppBuilder.UseFilter<ExceptionHandlingFilter>();
